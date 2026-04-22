@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root {
+    @apply h-full bg-gray-950 text-gray-100 antialiased;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-gray-700 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-gray-600; }
+}
+
+@layer components {
+  /* Markdown content inside assistant bubbles */
+  .prose-opsiq {
+    @apply text-gray-200 leading-relaxed;
+  }
+  .prose-opsiq h1, .prose-opsiq h2, .prose-opsiq h3 {
+    @apply text-gray-100 font-semibold mt-4 mb-2;
+  }
+  .prose-opsiq h1 { @apply text-lg; }
+  .prose-opsiq h2 { @apply text-base; }
+  .prose-opsiq h3 { @apply text-sm; }
+  .prose-opsiq p { @apply mb-3 last:mb-0; }
+  .prose-opsiq ul { @apply list-disc pl-5 mb-3 space-y-1; }
+  .prose-opsiq ol { @apply list-decimal pl-5 mb-3 space-y-1; }
+  .prose-opsiq li { @apply text-gray-200; }
+  .prose-opsiq a { @apply text-indigo-400 hover:text-indigo-300 underline; }
+  .prose-opsiq strong { @apply text-gray-100 font-semibold; }
+  .prose-opsiq em { @apply text-gray-300 italic; }
+  .prose-opsiq blockquote {
+    @apply border-l-2 border-gray-600 pl-4 text-gray-400 italic my-3;
+  }
+  .prose-opsiq hr { @apply border-gray-700 my-4; }
+  .prose-opsiq table { @apply w-full border-collapse text-sm my-3; }
+  .prose-opsiq th {
+    @apply bg-gray-800 text-gray-300 font-medium px-3 py-2 text-left border border-gray-700;
+  }
+  .prose-opsiq td { @apply px-3 py-2 border border-gray-700 text-gray-300; }
+  .prose-opsiq tr:nth-child(even) td { @apply bg-gray-800/40; }
+  .prose-opsiq code {
+    @apply font-mono text-xs bg-gray-800 text-emerald-400 px-1.5 py-0.5 rounded;
+  }
+  .prose-opsiq pre {
+    @apply bg-gray-900 border border-gray-700/60 rounded-lg p-4 overflow-x-auto my-3;
+  }
+  .prose-opsiq pre code {
+    @apply bg-transparent text-gray-300 p-0 text-xs leading-relaxed;
+  }
+}
