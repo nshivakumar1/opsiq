@@ -3,7 +3,7 @@ FROM node:20-slim AS web-builder
 
 WORKDIR /web
 COPY interfaces/web/package.json interfaces/web/package-lock.json* ./
-RUN npm ci --silent
+RUN npm install --silent
 COPY interfaces/web/ ./
 RUN npm run build
 
