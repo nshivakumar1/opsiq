@@ -83,6 +83,11 @@ async def health():
     return HealthResponse(status="ok", version="0.1.0")
 
 
+@app.get("/", include_in_schema=False)
+async def root():
+    return HealthResponse(status="ok", version="0.1.0")
+
+
 @app.post("/query", response_model=QueryResponse)
 async def query(request: QueryRequest):
     """
