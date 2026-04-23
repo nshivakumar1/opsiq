@@ -8,8 +8,18 @@ const domain   = import.meta.env.VITE_AUTH0_DOMAIN
 const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID
 const audience = import.meta.env.VITE_AUTH0_AUDIENCE
 
+// Use replaceState so Auth0 finishes writing the token before any navigation.
+// A full page reload (window.location.href) can race ahead of localStorage writes
+// and boot the app unauthenticated, causing an infinite redirect.
 const onRedirectCallback = (appState) => {
-  window.location.href = appState?.returnTo || '/app'
+  window.history.replaceState({}, document.title, appState?.returnTo ?? '/app')
+}
+
+// Only include audience when configured — passing undefined causes some
+// Auth0 SDK versions to throw or produce a malformed authorization URL.
+const authorizationParams = {
+  redirect_uri: window.location.origin + '/app',
+  ...(audience ? { audience } : {}),
 }
 
 createRoot(document.getElementById('root')).render(
@@ -17,10 +27,7 @@ createRoot(document.getElementById('root')).render(
     <Auth0Provider
       domain={domain}
       clientId={clientId}
-      authorizationParams={{
-        redirect_uri: window.location.origin + '/app',
-        audience: audience,
-      }}
+      authorizationParams={authorizationParams}
       cacheLocation="localstorage"
       onRedirectCallback={onRedirectCallback}
     >
