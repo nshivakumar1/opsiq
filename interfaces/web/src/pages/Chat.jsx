@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
 import MessageBubble from '../components/MessageBubble.jsx'
 import InputBar from '../components/InputBar.jsx'
@@ -20,7 +20,7 @@ function getOrCreateSessionId() {
 const WS_CONNECTING = 'connecting'
 const WS_OPEN       = 'open'
 const WS_CLOSED     = 'closed'
-const WS_REST       = 'rest'   // WS timed out — REST fallback active
+const WS_REST       = 'rest'
 
 /* ── Starfield ───────────────────────────────────────────────────────── */
 const STARS = Array.from({ length: 100 }, (_, i) => ({
@@ -61,6 +61,121 @@ function WsStatusPill({ status }) {
       <span className="w-1.5 h-1.5 rounded-full"
         style={{ background: cfg.color, boxShadow: `0 0 6px ${cfg.color}` }} />
       <span className="text-[11px] font-medium font-sans" style={{ color: cfg.color }}>{cfg.label}</span>
+    </div>
+  )
+}
+
+/* ── Usage bar ───────────────────────────────────────────────────────── */
+function UsageBar({ cloudInfo, onUpgradeClick }) {
+  if (!cloudInfo || cloudInfo.query_limit === null) return null
+
+  const used  = cloudInfo.query_count_month ?? 0
+  const limit = cloudInfo.query_limit
+  const pct   = Math.min(100, (used / limit) * 100)
+  const color = pct >= 95 ? '#f87171' : pct >= 80 ? '#f0883e' : '#00d4aa'
+
+  return (
+    <div className="flex items-center gap-2 select-none">
+      <span className="text-[11px] font-mono whitespace-nowrap" style={{ color: 'rgba(255,255,255,0.35)' }}>
+        {limit - used < 0 ? 0 : limit - used}/{limit}
+      </span>
+      <div
+        className="w-14 h-1 rounded-full overflow-hidden"
+        style={{ background: 'rgba(255,255,255,0.08)', cursor: cloudInfo.plan === 'free' ? 'pointer' : 'default' }}
+        onClick={cloudInfo.plan === 'free' ? onUpgradeClick : undefined}
+        title={`${used} of ${limit} queries used this month`}
+      >
+        <div
+          className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${pct}%`, background: color }}
+        />
+      </div>
+    </div>
+  )
+}
+
+/* ── Upgrade modal ───────────────────────────────────────────────────── */
+function UpgradeModal({ onClose, onUpgrade, upgradeLoading }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
+      style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(10px)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div
+        className="relative max-w-md w-full rounded-2xl p-8"
+        style={{
+          background: '#0f1520',
+          border: '1px solid rgba(124,58,237,0.35)',
+          boxShadow: '0 0 60px rgba(124,58,237,0.18)',
+        }}
+      >
+        {/* Close */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-sm rounded-lg px-2 py-1 transition-colors font-sans"
+          style={{ color: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.08)' }}
+          onMouseEnter={e => e.currentTarget.style.color = 'white'}
+          onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
+        >✕</button>
+
+        {/* Icon */}
+        <div
+          className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-6"
+          style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)' }}
+        >⚡</div>
+
+        <h2 className="font-syne font-bold text-white text-xl mb-2">
+          You've used all your free queries
+        </h2>
+        <p className="text-[14px] leading-relaxed mb-6 font-sans" style={{ color: 'rgba(255,255,255,0.5)' }}>
+          Upgrade to Pro for{' '}
+          <span style={{ color: '#a78bfa' }}>2,000 queries/month</span>,
+          hosted infrastructure, and API access included. No setup required.
+        </p>
+
+        {/* Feature list */}
+        <ul className="space-y-2 mb-7">
+          {[
+            '2,000 queries per month',
+            'Hosted on OpsIQ Cloud',
+            'API access included',
+            'Slack bot provisioned',
+            'Priority support',
+          ].map(f => (
+            <li key={f} className="flex items-center gap-2.5 text-[13px] font-sans" style={{ color: 'rgba(255,255,255,0.65)' }}>
+              <span style={{ color: '#7c3aed' }}>✓</span>{f}
+            </li>
+          ))}
+        </ul>
+
+        <button
+          onClick={onUpgrade}
+          disabled={upgradeLoading}
+          className="w-full py-3 rounded-xl text-[13px] font-bold font-sans transition-opacity"
+          style={{
+            background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+            color: 'white',
+            boxShadow: '0 4px 24px rgba(124,58,237,0.4)',
+            opacity: upgradeLoading ? 0.6 : 1,
+            cursor: upgradeLoading ? 'wait' : 'pointer',
+          }}
+          onMouseEnter={e => { if (!upgradeLoading) e.currentTarget.style.opacity = '0.85' }}
+          onMouseLeave={e => { if (!upgradeLoading) e.currentTarget.style.opacity = '1' }}
+        >
+          {upgradeLoading ? 'Redirecting to Stripe…' : 'Upgrade to Pro — $49/mo →'}
+        </button>
+
+        <button
+          onClick={onClose}
+          className="w-full mt-3 py-2.5 text-[12px] font-sans transition-colors"
+          style={{ color: 'rgba(255,255,255,0.3)' }}
+          onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
+        >
+          Maybe later
+        </button>
+      </div>
     </div>
   )
 }
@@ -146,39 +261,99 @@ function EmptyState({ onSelect, canSend, firstName }) {
 /* ── Chat page ───────────────────────────────────────────────────────── */
 export default function Chat() {
   const { user, getAccessTokenSilently } = useAuth0()
+  const location = useLocation()
 
-  const [messages,      setMessages]      = useState([])
-  const [input,         setInput]         = useState('')
-  const [streaming,     setStreaming]     = useState(false)
-  const [wsStatus,      setWsStatus]      = useState(WS_CLOSED)
-  const [creditsBanner, setCreditsBanner] = useState(false)
+  const [messages,       setMessages]       = useState([])
+  const [input,          setInput]          = useState('')
+  const [streaming,      setStreaming]       = useState(false)
+  const [wsStatus,       setWsStatus]       = useState(WS_CLOSED)
+  const [creditsBanner,  setCreditsBanner]  = useState(false)
+  const [cloudInfo,      setCloudInfo]      = useState(null)
+  const [showUpgrade,    setShowUpgrade]    = useState(false)
+  const [upgradeLoading, setUpgradeLoading] = useState(false)
 
-  const sessionId       = useRef(getOrCreateSessionId())
-  const ws              = useRef(null)
-  const bottomRef       = useRef(null)
-  const reconnectTimer  = useRef(null)
-  const wsConnectTimer  = useRef(null)
-  // Refs for WS callbacks to access latest values without stale closures
-  const streamingRef    = useRef(false)
-  const pendingQueryRef = useRef('')
+  const sessionId        = useRef(getOrCreateSessionId())
+  const ws               = useRef(null)
+  const bottomRef        = useRef(null)
+  const reconnectTimer   = useRef(null)
+  const wsConnectTimer   = useRef(null)
+  const streamingRef     = useRef(false)
+  const pendingQueryRef  = useRef('')
   const sendQueryRESTRef = useRef(null)
 
   useEffect(() => { streamingRef.current = streaming }, [streaming])
 
-  /* ── REST fallback ───────────────────────────────────────────────── */
+  /* ── Cloud: fetch usage info ─────────────────────────────────────────── */
+  const fetchCloudInfo = useCallback(async () => {
+    try {
+      const token = await getAccessTokenSilently()
+      const res   = await fetch(`${API_BASE}/cloud/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) setCloudInfo(await res.json())
+    } catch {
+      // OSS mode or not authenticated — no cloud info
+    }
+  }, [getAccessTokenSilently])
+
+  // Fetch on mount; also detect ?upgraded=true coming back from Stripe
+  useEffect(() => {
+    fetchCloudInfo()
+    const params = new URLSearchParams(location.search)
+    if (params.get('upgraded') === 'true') {
+      window.history.replaceState({}, '', '/app')
+    }
+  }, [fetchCloudInfo, location.search])
+
+  /* ── Cloud: upgrade handler ──────────────────────────────────────────── */
+  async function handleUpgrade() {
+    setUpgradeLoading(true)
+    try {
+      const headers = { 'Content-Type': 'application/json' }
+      try {
+        const token = await getAccessTokenSilently()
+        if (token) headers['Authorization'] = `Bearer ${token}`
+      } catch { /* OSS */ }
+
+      const res  = await fetch(`${API_BASE}/cloud/billing/checkout`, {
+        method: 'POST', headers,
+        body: JSON.stringify({ plan: 'pro' }),
+      })
+      const data = await res.json()
+      if (data.checkout_url) window.location.href = data.checkout_url
+    } catch (err) {
+      console.error('Upgrade error:', err)
+    } finally {
+      setUpgradeLoading(false)
+    }
+  }
+
+  /* ── REST fallback ───────────────────────────────────────────────────── */
   async function sendQueryREST(query) {
     try {
       const headers = { 'Content-Type': 'application/json' }
       try {
         const token = await getAccessTokenSilently()
         if (token) headers['Authorization'] = `Bearer ${token}`
-      } catch { /* OSS mode — no token */ }
+      } catch { /* OSS mode */ }
 
       const res = await fetch(`${API_BASE}/query`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ query, session_id: sessionId.current }),
       })
+
+      if (res.status === 429) {
+        const data = await res.json().catch(() => ({}))
+        const msg  = data?.detail?.message ?? 'Query limit reached.'
+        setMessages(prev => prev.map(msg =>
+          (msg.role === 'assistant' && msg.streaming)
+            ? { ...msg, content: `⚠️ ${msg}`, toolsUsed: [], streaming: false, isError: true }
+            : msg
+        ))
+        setShowUpgrade(true)
+        return
+      }
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
@@ -187,17 +362,19 @@ export default function Chat() {
       if (data.status === 402 || /credit|billing|quota|payment/i.test(data.answer ?? ''))
         setCreditsBanner(true)
 
-      setMessages(prev => prev.map(msg =>
-        (msg.role === 'assistant' && msg.streaming)
-          ? { ...msg, content: data.answer, toolsUsed: data.tools_used ?? [], streaming: false }
-          : msg
+      setMessages(prev => prev.map(m =>
+        (m.role === 'assistant' && m.streaming)
+          ? { ...m, content: data.answer, toolsUsed: data.tools_used ?? [], streaming: false }
+          : m
       ))
+
+      fetchCloudInfo() // refresh usage count
     } catch (err) {
       console.error('REST fallback error:', err)
-      setMessages(prev => prev.map(msg =>
-        (msg.role === 'assistant' && msg.streaming)
-          ? { ...msg, content: `⚠️ Could not reach OpsIQ backend — ${err.message}`, toolsUsed: [], streaming: false, isError: true }
-          : msg
+      setMessages(prev => prev.map(m =>
+        (m.role === 'assistant' && m.streaming)
+          ? { ...m, content: `⚠️ Could not reach OpsIQ backend — ${err.message}`, toolsUsed: [], streaming: false, isError: true }
+          : m
       ))
     } finally {
       setStreaming(false)
@@ -205,10 +382,9 @@ export default function Chat() {
     }
   }
 
-  // Keep ref current so WS callbacks always call the latest version
   sendQueryRESTRef.current = sendQueryREST
 
-  /* ── WebSocket connection ────────────────────────────────────────── */
+  /* ── WebSocket connection ────────────────────────────────────────────── */
   const connect = useCallback(async () => {
     if (ws.current?.readyState === WebSocket.OPEN) return
     setWsStatus(WS_CONNECTING)
@@ -219,7 +395,6 @@ export default function Chat() {
       wsUrl += `?token=${encodeURIComponent(token)}`
     } catch { /* OSS mode */ }
 
-    // 10s timeout — if WS doesn't open, mark REST fallback available
     wsConnectTimer.current = setTimeout(() => {
       if (ws.current?.readyState !== WebSocket.OPEN) {
         console.warn('WebSocket connection timed out — REST fallback active')
@@ -236,20 +411,17 @@ export default function Chat() {
 
     socket.onerror = (err) => {
       console.error('WebSocket error:', err)
-      // onclose fires immediately after — REST fallback handled there
     }
 
     socket.onclose = (event) => {
       clearTimeout(wsConnectTimer.current)
       setWsStatus(WS_CLOSED)
 
-      // Mid-stream abnormal close → rescue the in-flight query via REST
       if (event.code !== 1000 && streamingRef.current && pendingQueryRef.current) {
         console.warn(`WebSocket closed mid-stream (code ${event.code}) — falling back to REST`)
         sendQueryRESTRef.current?.(pendingQueryRef.current)
       }
 
-      // Reconnect in background
       reconnectTimer.current = setTimeout(connect, 3000)
     }
 
@@ -270,7 +442,7 @@ export default function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  /* ── WS event handler ────────────────────────────────────────────── */
+  /* ── WS event handler ────────────────────────────────────────────────── */
   function handleWsEvent(event) {
     switch (event.type) {
       case 'tool_call':
@@ -281,6 +453,7 @@ export default function Chat() {
             return [...prev.slice(0,-1), { ...last, toolEvents: [...(last.toolEvents ?? []), event] }]
           return prev
         }); break
+
       case 'text_chunk':
         setMessages(prev => {
           const last = prev[prev.length - 1]
@@ -288,6 +461,7 @@ export default function Chat() {
             return [...prev.slice(0,-1), { ...last, content: event.text }]
           return prev
         }); break
+
       case 'done':
         setMessages(prev => {
           const last = prev[prev.length - 1]
@@ -297,11 +471,21 @@ export default function Chat() {
         })
         setStreaming(false)
         pendingQueryRef.current = ''
+        fetchCloudInfo() // refresh usage count after each query
         break
+
       case 'error': {
         const msg = event.message ?? ''
-        if (event.status === 402 || event.code === 'insufficient_credits' || /credit|billing|quota|payment/i.test(msg))
+
+        if (event.code === 'query_limit_exceeded') {
+          setShowUpgrade(true)
+        } else if (
+          event.status === 402 || event.code === 'insufficient_credits' ||
+          /credit|billing|quota|payment/i.test(msg)
+        ) {
           setCreditsBanner(true)
+        }
+
         setMessages(prev => {
           const last = prev[prev.length - 1]
           if (last?.role === 'assistant' && last.streaming)
@@ -316,7 +500,7 @@ export default function Chat() {
     }
   }
 
-  /* ── Send ────────────────────────────────────────────────────────── */
+  /* ── Send ────────────────────────────────────────────────────────────── */
   async function sendQuery() {
     const query = input.trim()
     if (!query || streaming) return
@@ -333,7 +517,6 @@ export default function Chat() {
     if (ws.current?.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify({ query }))
     } else {
-      // WS not available — use REST directly
       await sendQueryREST(query)
     }
   }
@@ -368,7 +551,7 @@ export default function Chat() {
 
   const firstName = user?.given_name || user?.name?.split(' ')[0] || null
 
-  /* ── Render ──────────────────────────────────────────────────────── */
+  /* ── Render ──────────────────────────────────────────────────────────── */
   return (
     <div className="chat-root" style={{ background: '#070b10' }}>
       <Starfield />
@@ -422,8 +605,15 @@ export default function Chat() {
             {sessionId.current.slice(0, 8)}
           </span>
         </div>
+
         <div className="flex items-center gap-4">
+          {/* Usage bar — only for free plan cloud users */}
+          {cloudInfo?.plan === 'free' && (
+            <UsageBar cloudInfo={cloudInfo} onUpgradeClick={() => setShowUpgrade(true)} />
+          )}
+
           <WsStatusPill status={wsStatus} />
+
           <button onClick={newSession}
             className="text-[12px] font-medium font-sans px-3 py-1.5 rounded-full transition-all"
             style={{ color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}
@@ -431,6 +621,7 @@ export default function Chat() {
             onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}>
             New session
           </button>
+
           {user && <UserMenu user={user} />}
         </div>
       </header>
@@ -452,7 +643,7 @@ export default function Chat() {
         </div>
       </main>
 
-      {/* Input — enabled whenever not actively streaming, WS or REST */}
+      {/* Input */}
       <div className="relative z-10 shrink-0 max-w-2xl mx-auto w-full">
         <InputBar
           value={input}
@@ -461,6 +652,15 @@ export default function Chat() {
           disabled={streaming}
         />
       </div>
+
+      {/* Upgrade modal */}
+      {showUpgrade && (
+        <UpgradeModal
+          onClose={() => setShowUpgrade(false)}
+          onUpgrade={handleUpgrade}
+          upgradeLoading={upgradeLoading}
+        />
+      )}
     </div>
   )
 }

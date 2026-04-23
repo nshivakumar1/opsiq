@@ -17,8 +17,12 @@ slack-sdk>=3.30.0
 slack-bolt>=1.21.0
 aiohttp>=3.9.0
 
-# Storage
-# (SQLite is stdlib; upgrade to asyncpg for Postgres cloud tier)
+# Storage / ORM
+sqlalchemy>=2.0.0
+# (SQLite is stdlib; set DATABASE_URL to a Postgres URL for production)
+
+# Billing
+stripe>=8.0.0
 
 # Dev
 python-dotenv>=1.0.0
