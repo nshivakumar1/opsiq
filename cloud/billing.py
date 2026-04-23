@@ -55,10 +55,10 @@ async def create_checkout_session(
         stripe.checkout.Session.create,
         mode="subscription",
         line_items=[{"price": plan_cfg["price_id"], "quantity": 1}],
-        customer_email=user_email,
         success_url=success_url,
         cancel_url=cancel_url,
         metadata={"workspace_id": workspace_id},
+        **({"customer_email": user_email} if user_email and "@" in user_email else {}),
     )
     return session.url
 
