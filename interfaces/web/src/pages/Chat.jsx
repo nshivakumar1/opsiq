@@ -286,7 +286,9 @@ export default function Chat() {
   /* ── Cloud: fetch usage info ─────────────────────────────────────────── */
   const fetchCloudInfo = useCallback(async () => {
     try {
-      const token = await getAccessTokenSilently()
+      const token = await getAccessTokenSilently({
+        authorizationParams: { audience: import.meta.env.VITE_AUTH0_AUDIENCE },
+      })
       const res   = await fetch(`${API_BASE}/cloud/me`, {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -311,7 +313,9 @@ export default function Chat() {
     try {
       const headers = { 'Content-Type': 'application/json' }
       try {
-        const token = await getAccessTokenSilently()
+        const token = await getAccessTokenSilently({
+          authorizationParams: { audience: import.meta.env.VITE_AUTH0_AUDIENCE },
+        })
         if (token) headers['Authorization'] = `Bearer ${token}`
       } catch { /* OSS */ }
 
@@ -333,7 +337,9 @@ export default function Chat() {
     try {
       const headers = { 'Content-Type': 'application/json' }
       try {
-        const token = await getAccessTokenSilently()
+        const token = await getAccessTokenSilently({
+          authorizationParams: { audience: import.meta.env.VITE_AUTH0_AUDIENCE },
+        })
         if (token) headers['Authorization'] = `Bearer ${token}`
       } catch { /* OSS mode */ }
 
@@ -391,7 +397,9 @@ export default function Chat() {
 
     let wsUrl = `${WS_BASE}/ws/${sessionId.current}`
     try {
-      const token = await getAccessTokenSilently()
+      const token = await getAccessTokenSilently({
+        authorizationParams: { audience: import.meta.env.VITE_AUTH0_AUDIENCE },
+      })
       wsUrl += `?token=${encodeURIComponent(token)}`
     } catch { /* OSS mode */ }
 
