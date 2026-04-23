@@ -290,13 +290,21 @@ export default function Chat() {
       const token = await getAccessTokenSilently({
         authorizationParams: { audience: import.meta.env.VITE_AUTH0_AUDIENCE },
       })
-      const res   = await fetch(`${API_BASE}/cloud/me`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch(`${API_BASE}/cloud/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       })
-      if (res.ok) setCloudInfo(await res.json())
-    } catch {
-      // OSS mode or not authenticated — no cloud info
+      if (res.ok) {
+        const data = await res.json()
+        setCloudInfo(data)
+        return data
+      }
+    } catch (err) {
+      console.error('fetchCloudInfo failed:', err)
     }
+    return null
   }, [getAccessTokenSilently])
 
   // Fetch on mount; handle Stripe return params
@@ -306,8 +314,18 @@ export default function Chat() {
     if (params.get('upgraded') === 'true') {
       window.history.replaceState({}, '', '/app')
       setUpgradeSuccess(true)
-      // Give webhook ~2s to process before re-fetching plan
-      setTimeout(() => fetchCloudInfo(), 2000)
+      // Poll /cloud/me every 2s until plan === "pro" (max 10 attempts)
+      let attempts = 0
+      const pollInterval = setInterval(async () => {
+        attempts++
+        const data = await fetchCloudInfo()
+        if (data?.plan === 'pro' || attempts >= 10) {
+          clearInterval(pollInterval)
+          if (data?.plan === 'pro') {
+            console.log('Pro plan confirmed!')
+          }
+        }
+      }, 2000)
     } else if (params.get('upgrade') === 'true') {
       window.history.replaceState({}, '', '/app')
       setShowUpgrade(true)
