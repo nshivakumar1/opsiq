@@ -48,7 +48,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Tighten in production
+    allow_origins=[
+        "http://localhost:3000",
+        "https://opsiq.theinfinityloop.space",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -81,11 +84,6 @@ else:
     @app.get("/", include_in_schema=False)
     async def root():
         return HealthResponse(status="ok", version="0.1.0")
-
-
-@app.get("/", include_in_schema=False)
-async def root():
-    return HealthResponse(status="ok", version="0.1.0")
 
 
 @app.post("/query", response_model=QueryResponse)
