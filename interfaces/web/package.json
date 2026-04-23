@@ -10,6 +10,7 @@
     "vercel-build": "vite build"
   },
   "dependencies": {
+    "@auth0/auth0-react": "^2.16.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^9.0.1",

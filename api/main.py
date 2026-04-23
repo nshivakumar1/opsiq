@@ -16,7 +16,7 @@ import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -25,6 +25,7 @@ from api.models import QueryRequest, QueryResponse, HealthResponse
 from agent.core import OpsIQAgent
 from memory.store import MemoryStore
 from interfaces.slack_bot.app import slack_app_router
+from cloud.auth import get_current_user_optional
 
 _WEB_DIST = Path(__file__).parent.parent / "interfaces" / "web" / "dist"
 
@@ -87,15 +88,22 @@ else:
 
 
 @app.post("/query", response_model=QueryResponse)
-async def query(request: QueryRequest):
+async def query(
+    request_body: QueryRequest,
+    request: Request,
+    current_user: dict | None = Depends(get_current_user_optional),
+):
     """
     Blocking query endpoint. Returns the complete answer once all
     tool calls are resolved. Good for CLI and simple integrations.
+
+    current_user is None for OSS self-hosted users — that's fully allowed.
+    current_user contains Auth0 claims for cloud users.
     """
-    session_id = request.session_id or str(uuid.uuid4())
+    session_id = request_body.session_id or str(uuid.uuid4())
     try:
         agent = OpsIQAgent()
-        result = agent.query(request.query, session_id)
+        result = agent.query(request_body.query, session_id)
         return QueryResponse(
             answer=result["answer"],
             tools_used=result["tools_used"],

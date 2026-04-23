@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth0 } from '@auth0/auth0-react'
 
 /* ── Design tokens ───────────────────────────────────────────────────── */
 const T = {
@@ -385,11 +386,20 @@ function PricingSection() {
 /* ── Navbar ──────────────────────────────────────────────────────────── */
 function Navbar() {
   const [scrolled, setScrolled] = useState(false)
+  const { isAuthenticated, loginWithRedirect } = useAuth0()
+  const navigate = useNavigate()
+
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 24)
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
   }, [])
+
+  function handleLaunch() {
+    if (isAuthenticated) navigate('/app')
+    else loginWithRedirect()
+  }
+
   return (
     <nav className="fixed top-0 inset-x-0 z-50 transition-all duration-300"
       style={{
@@ -422,13 +432,14 @@ function Navbar() {
             onMouseLeave={e => { e.currentTarget.style.color = T.muted; e.currentTarget.style.borderColor = T.border }}>
             GitHub
           </a>
-          <Link to="/app"
+          <button
+            onClick={handleLaunch}
             className="text-[12px] font-semibold font-sans px-4 py-2 rounded-full transition-opacity duration-200"
-            style={{ background: T.teal, color: T.bg }}
+            style={{ background: T.teal, color: T.bg, border: 'none', cursor: 'pointer' }}
             onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
             onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
-            Launch app →
-          </Link>
+            {isAuthenticated ? 'Open app →' : 'Get started free →'}
+          </button>
         </div>
       </div>
     </nav>
@@ -437,6 +448,14 @@ function Navbar() {
 
 /* ── Landing page ────────────────────────────────────────────────────── */
 export default function Landing() {
+  const { isAuthenticated, loginWithRedirect } = useAuth0()
+  const navigate = useNavigate()
+
+  function handleCta() {
+    if (isAuthenticated) navigate('/app')
+    else loginWithRedirect()
+  }
+
   return (
     <div style={{ background: T.bg, color: 'white', overflowX: 'hidden' }}>
       <Navbar />
@@ -479,13 +498,14 @@ export default function Landing() {
             </FadeIn>
             <FadeIn delay={0.22}>
               <div className="flex flex-wrap gap-3">
-                <Link to="/app"
+                <button
+                  onClick={handleCta}
                   className="inline-flex items-center gap-2 text-[13px] font-semibold font-sans px-6 py-3 rounded-full transition-all duration-200"
-                  style={{ background: T.teal, color: T.bg, boxShadow: '0 0 32px rgba(0,212,170,0.35)' }}
+                  style={{ background: T.teal, color: T.bg, boxShadow: '0 0 32px rgba(0,212,170,0.35)', border: 'none', cursor: 'pointer' }}
                   onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 52px rgba(0,212,170,0.52)'}
                   onMouseLeave={e => e.currentTarget.style.boxShadow = '0 0 32px rgba(0,212,170,0.35)'}>
-                  Try it live →
-                </Link>
+                  {isAuthenticated ? 'Open app →' : 'Get started free →'}
+                </button>
                 <a href="https://github.com/your-org/opsiq" target="_blank" rel="noreferrer"
                   className="inline-flex items-center gap-2 text-[13px] font-medium font-sans px-6 py-3 rounded-full transition-all duration-200"
                   style={{ color: 'rgba(255,255,255,0.7)', border: `1px solid ${T.border}` }}
@@ -619,13 +639,14 @@ export default function Landing() {
               Ask your infrastructure anything — in plain English.
             </p>
             <div className="relative flex flex-wrap justify-center gap-3">
-              <Link to="/app"
+              <button
+                onClick={handleCta}
                 className="inline-flex items-center gap-2 text-[13px] font-bold font-sans px-7 py-3.5 rounded-full transition-all duration-200"
-                style={{ background: T.teal, color: T.bg, boxShadow: '0 0 40px rgba(0,212,170,0.35)' }}
+                style={{ background: T.teal, color: T.bg, boxShadow: '0 0 40px rgba(0,212,170,0.35)', border: 'none', cursor: 'pointer' }}
                 onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 60px rgba(0,212,170,0.52)'}
                 onMouseLeave={e => e.currentTarget.style.boxShadow = '0 0 40px rgba(0,212,170,0.35)'}>
-                Try OpsIQ free →
-              </Link>
+                {isAuthenticated ? 'Open app →' : 'Try OpsIQ free →'}
+              </button>
               <a href="https://github.com/your-org/opsiq" target="_blank" rel="noreferrer"
                 className="inline-flex items-center text-[13px] font-medium font-sans px-7 py-3.5 rounded-full transition-all duration-200"
                 style={{ color: 'rgba(255,255,255,0.65)', border: `1px solid ${T.border}` }}
