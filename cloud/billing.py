@@ -105,14 +105,14 @@ def handle_webhook(payload: bytes, sig_header: str, db) -> dict:
         raise ValueError(f"Invalid signature: {exc}") from exc
 
     event_type = event["type"]
-    data       = event["data"]["object"]
     logger.info("Webhook received: %s", event_type)
 
     try:
         if event_type == "checkout.session.completed":
-            workspace_id    = data.get("metadata", {}).get("workspace_id")
-            customer_id     = data.get("customer")
-            subscription_id = data.get("subscription")
+            session_dict = event["data"]["object"].to_dict_recursive()
+            workspace_id    = session_dict.get("metadata", {}).get("workspace_id")
+            customer_id     = session_dict.get("customer")
+            subscription_id = session_dict.get("subscription")
 
             logger.info(
                 "Checkout completed: workspace=%s customer=%s subscription=%s",
@@ -131,44 +131,39 @@ def handle_webhook(payload: bytes, sig_header: str, db) -> dict:
                 else:
                     logger.error("Workspace %s not found in DB", workspace_id)
             else:
-                logger.error("No workspace_id in checkout session metadata")
+                logger.error("No workspace_id in session metadata")
 
         elif event_type == "customer.subscription.updated":
-            customer_id = data.get("customer")
-            ws = db.query(Workspace).filter(Workspace.stripe_customer_id == customer_id).first()
+            sub_dict = event["data"]["object"].to_dict_recursive()
+            sub_id   = sub_dict.get("id")
+            status   = sub_dict.get("status")
+            ws = db.query(Workspace).filter(Workspace.stripe_subscription_id == sub_id).first()
             if ws:
-                ws.stripe_subscription_id = data.get("id")
-                ws.subscription_status    = data.get("status", "active")
-                items = data.get("items", {}).get("data", [])
-                if items:
-                    price_id = items[0].get("price", {}).get("id")
-                    for plan_key, plan_cfg in PLANS.items():
-                        if plan_cfg.get("price_id") == price_id:
-                            ws.plan = plan_key
-                            break
+                ws.subscription_status = status
+                if status == "active":
+                    ws.plan = "pro"
                 db.commit()
-                logger.info(
-                    "Subscription updated for customer %s → status=%s",
-                    customer_id, ws.subscription_status,
-                )
+                logger.info("Subscription updated: %s → %s", sub_id, status)
 
         elif event_type == "customer.subscription.deleted":
-            customer_id = data.get("customer")
-            ws = db.query(Workspace).filter(Workspace.stripe_customer_id == customer_id).first()
+            sub_dict = event["data"]["object"].to_dict_recursive()
+            sub_id   = sub_dict.get("id")
+            ws = db.query(Workspace).filter(Workspace.stripe_subscription_id == sub_id).first()
             if ws:
                 ws.plan                   = "free"
                 ws.subscription_status    = "canceled"
                 ws.stripe_subscription_id = None
                 db.commit()
-                logger.info("Workspace downgraded to free for customer %s", customer_id)
+                logger.info("Subscription canceled: %s", sub_id)
 
         elif event_type == "invoice.payment_failed":
-            customer_id = data.get("customer")
+            inv_dict    = event["data"]["object"].to_dict_recursive()
+            customer_id = inv_dict.get("customer")
             ws = db.query(Workspace).filter(Workspace.stripe_customer_id == customer_id).first()
             if ws:
                 ws.subscription_status = "past_due"
                 db.commit()
-                logger.warning("Payment failed for customer %s — marked past_due", customer_id)
+                logger.info("Payment failed: customer=%s", customer_id)
 
         else:
             logger.debug("Unhandled Stripe event type: %s", event_type)

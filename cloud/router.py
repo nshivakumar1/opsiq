@@ -2,6 +2,7 @@
 OpsIQ Cloud — /cloud API router
 """
 import logging
+import os
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
@@ -144,6 +145,12 @@ async def billing_webhook(request: Request, db: Session = Depends(get_db)):
     payload    = await request.body()
     sig_header = request.headers.get("stripe-signature", "")
 
+    logger.info(
+        "Webhook received, sig present: %s, secret set: %s",
+        bool(sig_header),
+        bool(os.getenv("STRIPE_WEBHOOK_SECRET")),
+    )
+
     if not sig_header:
         raise HTTPException(status_code=400, detail="Missing stripe-signature header")
 
@@ -151,8 +158,8 @@ async def billing_webhook(request: Request, db: Session = Depends(get_db)):
         result = handle_webhook(payload, sig_header, db)
         return result
     except ValueError as exc:
-        logger.warning("Webhook rejected: %s", exc)
-        raise HTTPException(status_code=400, detail=str(exc))
+        logger.error("Webhook failed: %s", exc)
+        raise HTTPException(status_code=400, detail=f"Webhook failed: {exc}")
     except Exception:
         logger.exception("Webhook processing error")
         raise HTTPException(status_code=500, detail="Webhook processing failed")
