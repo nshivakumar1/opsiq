@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 _WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
-FRONTEND_URL    = os.getenv("FRONTEND_URL", "https://opsiq.theinfinityloop.space")
+FRONTEND_URL    = os.getenv("FRONTEND_URL", "https://opsiq.theinfinityloop.space").rstrip("/")
 
 PLANS: dict[str, dict] = {
     "free": {
@@ -38,8 +38,6 @@ async def create_checkout_session(
     workspace_id: str,
     plan: str,
     user_email: str,
-    success_url: str,
-    cancel_url: str,
 ) -> str:
     """
     Creates a Stripe Checkout Session for the given plan.
@@ -50,6 +48,13 @@ async def create_checkout_session(
     plan_cfg = PLANS.get(plan)
     if not plan_cfg or not plan_cfg.get("price_id"):
         raise ValueError(f"Plan '{plan}' is not valid or has no Stripe price configured.")
+
+    success_url = (
+        f"{FRONTEND_URL}/app"
+        f"?upgraded=true"
+        f"&session_id={{CHECKOUT_SESSION_ID}}"
+    )
+    cancel_url = f"{FRONTEND_URL}/app?upgrade_cancelled=true"
 
     session = await asyncio.to_thread(
         stripe.checkout.Session.create,
@@ -84,49 +89,57 @@ async def create_customer_portal_session(
 
 # ── Webhook ───────────────────────────────────────────────────────────────────
 
-async def handle_webhook(payload: bytes, sig_header: str) -> dict:
+def handle_webhook(payload: bytes, sig_header: str, db) -> dict:
     """
-    Verifies the Stripe webhook signature and processes the event.
+    Verifies the Stripe webhook signature and processes the event synchronously.
     Must receive the raw request body — do NOT parse as JSON first.
-    Raises ValueError on invalid signature.
+    Raises ValueError on invalid payload or signature.
     """
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, _WEBHOOK_SECRET)
+    except ValueError as exc:
+        logger.error("Invalid webhook payload: %s", exc)
+        raise
     except stripe.SignatureVerificationError as exc:
-        raise ValueError(f"Invalid Stripe webhook signature: {exc}") from exc
+        logger.error("Invalid webhook signature: %s", exc)
+        raise ValueError(f"Invalid signature: {exc}") from exc
 
-    await asyncio.to_thread(_process_webhook_event, event)
-    return {"received": True}
+    event_type = event["type"]
+    data       = event["data"]["object"]
+    logger.info("Webhook received: %s", event_type)
 
-
-def _process_webhook_event(event: dict) -> None:
-    """Synchronous DB work — runs in a thread so it doesn't block the event loop."""
-    db = SessionLocal()
     try:
-        etype = event["type"]
+        if event_type == "checkout.session.completed":
+            workspace_id    = data.get("metadata", {}).get("workspace_id")
+            customer_id     = data.get("customer")
+            subscription_id = data.get("subscription")
 
-        if etype == "checkout.session.completed":
-            obj          = event["data"]["object"]
-            workspace_id = obj.get("metadata", {}).get("workspace_id")
+            logger.info(
+                "Checkout completed: workspace=%s customer=%s subscription=%s",
+                workspace_id, customer_id, subscription_id,
+            )
+
             if workspace_id:
                 ws = db.query(Workspace).filter(Workspace.id == workspace_id).first()
                 if ws:
                     ws.plan                   = "pro"
-                    ws.stripe_customer_id     = obj.get("customer")
-                    ws.stripe_subscription_id = obj.get("subscription")
+                    ws.stripe_customer_id     = customer_id
+                    ws.stripe_subscription_id = subscription_id
                     ws.subscription_status    = "active"
                     db.commit()
-                    logger.info("Workspace %s upgraded to pro", workspace_id)
+                    logger.info("Workspace %s upgraded to Pro", workspace_id)
+                else:
+                    logger.error("Workspace %s not found in DB", workspace_id)
+            else:
+                logger.error("No workspace_id in checkout session metadata")
 
-        elif etype == "customer.subscription.updated":
-            sub         = event["data"]["object"]
-            customer_id = sub.get("customer")
+        elif event_type == "customer.subscription.updated":
+            customer_id = data.get("customer")
             ws = db.query(Workspace).filter(Workspace.stripe_customer_id == customer_id).first()
             if ws:
-                ws.stripe_subscription_id = sub.get("id")
-                ws.subscription_status    = sub.get("status", "active")
-                # Sync plan from price ID
-                items = sub.get("items", {}).get("data", [])
+                ws.stripe_subscription_id = data.get("id")
+                ws.subscription_status    = data.get("status", "active")
+                items = data.get("items", {}).get("data", [])
                 if items:
                     price_id = items[0].get("price", {}).get("id")
                     for plan_key, plan_cfg in PLANS.items():
@@ -134,11 +147,13 @@ def _process_webhook_event(event: dict) -> None:
                             ws.plan = plan_key
                             break
                 db.commit()
-                logger.info("Subscription updated for customer %s → status=%s", customer_id, ws.subscription_status)
+                logger.info(
+                    "Subscription updated for customer %s → status=%s",
+                    customer_id, ws.subscription_status,
+                )
 
-        elif etype == "customer.subscription.deleted":
-            sub         = event["data"]["object"]
-            customer_id = sub.get("customer")
+        elif event_type == "customer.subscription.deleted":
+            customer_id = data.get("customer")
             ws = db.query(Workspace).filter(Workspace.stripe_customer_id == customer_id).first()
             if ws:
                 ws.plan                   = "free"
@@ -147,24 +162,23 @@ def _process_webhook_event(event: dict) -> None:
                 db.commit()
                 logger.info("Workspace downgraded to free for customer %s", customer_id)
 
-        elif etype == "invoice.payment_failed":
-            invoice     = event["data"]["object"]
-            customer_id = invoice.get("customer")
+        elif event_type == "invoice.payment_failed":
+            customer_id = data.get("customer")
             ws = db.query(Workspace).filter(Workspace.stripe_customer_id == customer_id).first()
             if ws:
                 ws.subscription_status = "past_due"
                 db.commit()
-                logger.warning("Payment failed for customer %s — subscription marked past_due", customer_id)
+                logger.warning("Payment failed for customer %s — marked past_due", customer_id)
 
         else:
-            logger.debug("Unhandled Stripe event type: %s", etype)
+            logger.debug("Unhandled Stripe event type: %s", event_type)
 
     except Exception:
         db.rollback()
-        logger.exception("Error processing webhook event %s", event.get("type"))
+        logger.exception("Error processing webhook event %s", event_type)
         raise
-    finally:
-        db.close()
+
+    return {"received": True}
 
 
 # ── Status helper ─────────────────────────────────────────────────────────────

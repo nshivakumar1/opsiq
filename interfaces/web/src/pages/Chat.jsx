@@ -268,9 +268,10 @@ export default function Chat() {
   const [streaming,      setStreaming]       = useState(false)
   const [wsStatus,       setWsStatus]       = useState(WS_CLOSED)
   const [creditsBanner,  setCreditsBanner]  = useState(false)
-  const [cloudInfo,      setCloudInfo]      = useState(null)
-  const [showUpgrade,    setShowUpgrade]    = useState(false)
-  const [upgradeLoading, setUpgradeLoading] = useState(false)
+  const [cloudInfo,       setCloudInfo]       = useState(null)
+  const [showUpgrade,     setShowUpgrade]     = useState(false)
+  const [upgradeLoading,  setUpgradeLoading]  = useState(false)
+  const [upgradeSuccess,  setUpgradeSuccess]  = useState(false)
 
   const sessionId        = useRef(getOrCreateSessionId())
   const ws               = useRef(null)
@@ -298,14 +299,22 @@ export default function Chat() {
     }
   }, [getAccessTokenSilently])
 
-  // Fetch on mount; also detect ?upgraded=true coming back from Stripe
+  // Fetch on mount; handle Stripe return params
   useEffect(() => {
-    fetchCloudInfo()
-    const params = new URLSearchParams(location.search)
+    const params = new URLSearchParams(window.location.search)
+
     if (params.get('upgraded') === 'true') {
       window.history.replaceState({}, '', '/app')
+      setUpgradeSuccess(true)
+      // Give webhook ~2s to process before re-fetching plan
+      setTimeout(() => fetchCloudInfo(), 2000)
+    } else if (params.get('upgrade') === 'true') {
+      window.history.replaceState({}, '', '/app')
+      setShowUpgrade(true)
     }
-  }, [fetchCloudInfo, location.search])
+
+    fetchCloudInfo()
+  }, []) // eslint-disable-line
 
   /* ── Cloud: upgrade handler ──────────────────────────────────────────── */
   async function handleUpgrade() {
@@ -592,6 +601,32 @@ export default function Chat() {
             onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}>
             ✕
           </button>
+        </div>
+      )}
+
+      {/* Upgrade success banner */}
+      {upgradeSuccess && (
+        <div className="relative z-20 flex items-center justify-between gap-4 px-5 py-3 text-sm animate-fade-in font-sans"
+          style={{ background: 'rgba(0,212,170,0.07)', borderBottom: '1px solid rgba(0,212,170,0.18)' }}>
+          <span style={{ color: 'rgba(255,255,255,0.85)' }}>
+            ✓ Payment successful! Refreshing your plan...
+          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            <button onClick={fetchCloudInfo}
+              className="text-xs px-2 py-1 rounded-lg transition-colors font-sans"
+              style={{ color: '#00d4aa', border: '1px solid rgba(0,212,170,0.3)' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,212,170,0.1)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+              Refresh
+            </button>
+            <button onClick={() => setUpgradeSuccess(false)}
+              className="text-xs px-2 py-1 rounded-lg transition-colors font-sans"
+              style={{ color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'white'}
+              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}>
+              ✕
+            </button>
+          </div>
         </div>
       )}
 

@@ -89,8 +89,6 @@ async def billing_checkout(
             workspace_id=workspace.id,
             plan=body.plan,
             user_email=workspace.email,
-            success_url=f"{FRONTEND_URL}/app?upgraded=true",
-            cancel_url=f"{FRONTEND_URL}/app",
         )
         return {"checkout_url": checkout_url}
     except ValueError as exc:
@@ -137,7 +135,7 @@ async def billing_portal(
 # ── POST /cloud/billing/webhook ───────────────────────────────────────────────
 
 @cloud_router.post("/billing/webhook")
-async def billing_webhook(request: Request):
+async def billing_webhook(request: Request, db: Session = Depends(get_db)):
     """
     Stripe webhook receiver. No auth — Stripe calls this directly.
     IMPORTANT: reads the raw body before any JSON parsing so the signature
@@ -146,8 +144,11 @@ async def billing_webhook(request: Request):
     payload    = await request.body()
     sig_header = request.headers.get("stripe-signature", "")
 
+    if not sig_header:
+        raise HTTPException(status_code=400, detail="Missing stripe-signature header")
+
     try:
-        result = await handle_webhook(payload, sig_header)
+        result = handle_webhook(payload, sig_header, db)
         return result
     except ValueError as exc:
         logger.warning("Webhook rejected: %s", exc)
