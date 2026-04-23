@@ -59,10 +59,11 @@ function Starfield() {
 
 /* ── App ─────────────────────────────────────────────── */
 export default function App() {
-  const [messages,  setMessages]  = useState([])
-  const [input,     setInput]     = useState('')
-  const [streaming, setStreaming] = useState(false)
-  const [wsStatus,  setWsStatus]  = useState(WS_CLOSED)
+  const [messages,     setMessages]     = useState([])
+  const [input,        setInput]        = useState('')
+  const [streaming,    setStreaming]    = useState(false)
+  const [wsStatus,     setWsStatus]     = useState(WS_CLOSED)
+  const [creditsBanner, setCreditsBanner] = useState(false)
 
   const sessionId      = useRef(getOrCreateSessionId())
   const ws             = useRef(null)
@@ -114,14 +115,18 @@ export default function App() {
           return prev
         })
         setStreaming(false); break
-      case 'error':
+      case 'error': {
+        const msg = event.message ?? ''
+        if (event.status === 402 || /credit|billing|quota|payment/i.test(msg))
+          setCreditsBanner(true)
         setMessages(prev => {
           const last = prev[prev.length - 1]
           if (last?.role === 'assistant' && last.streaming)
-            return [...prev.slice(0,-1), { ...last, streaming: false, content: `**Error:** ${event.message}`, toolsUsed: [] }]
+            return [...prev.slice(0,-1), { ...last, streaming: false, content: `**Error:** ${msg}`, toolsUsed: [] }]
           return prev
         })
         setStreaming(false); break
+      }
       default: break
     }
   }
@@ -164,6 +169,33 @@ export default function App() {
 
       {/* Stars */}
       <Starfield />
+
+      {/* ── Credits exhausted banner ─────────────────── */}
+      {creditsBanner && (
+        <div className="relative z-20 flex items-center justify-between gap-4 px-5 py-3 text-sm animate-fade-in"
+          style={{ background: 'rgba(124,58,237,0.15)', borderBottom: '1px solid rgba(124,58,237,0.3)' }}>
+          <span style={{ color: 'rgba(255,255,255,0.85)' }}>
+            API credits exhausted. If you are self-hosting OpsIQ, add credits at{' '}
+            <a href="https://console.anthropic.com" target="_blank" rel="noreferrer"
+              style={{ color: '#a78bfa', textDecoration: 'underline' }}>
+              console.anthropic.com
+            </a>
+            . Or try{' '}
+            <a href="https://opsiq.theinfinityloop.space/pricing" target="_blank" rel="noreferrer"
+              style={{ color: '#a78bfa', textDecoration: 'underline' }}>
+              OpsIQ Cloud
+            </a>
+            {' '}— API access included.
+          </span>
+          <button onClick={() => setCreditsBanner(false)}
+            className="shrink-0 text-xs px-2 py-1 rounded-lg transition-colors"
+            style={{ color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)' }}
+            onMouseEnter={e => e.currentTarget.style.color = 'white'}
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}>
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Central violet glow orb — always present */}
       <div

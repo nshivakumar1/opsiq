@@ -9,6 +9,7 @@ Supports both blocking (query) and streaming (stream_query) modes.
 """
 import json
 import logging
+import os
 from typing import AsyncGenerator
 
 import anthropic
@@ -24,7 +25,14 @@ MAX_TOOL_ROUNDS = 10  # Safety limit — Claude shouldn't need more than this
 
 class OpsIQAgent:
     def __init__(self):
-        self.client = anthropic.Anthropic()
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise EnvironmentError(
+                "ANTHROPIC_API_KEY is not set. "
+                "Get your key at console.anthropic.com "
+                "and add it to your .env file."
+            )
+        self.client = anthropic.Anthropic(api_key=api_key)
         self.model = "claude-sonnet-4-20250514"
         self.memory = MemoryStore()
         self.dispatcher = ToolDispatcher()

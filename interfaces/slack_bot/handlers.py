@@ -21,8 +21,14 @@ from .formatting import agent_response_blocks, error_blocks, thinking_blocks
 
 logger = logging.getLogger(__name__)
 
-# One agent instance per process; it's stateless except for MemoryStore
-_agent = OpsIQAgent()
+# Lazy singleton — avoids import-time failure when ANTHROPIC_API_KEY is not set
+_agent = None
+
+def _get_agent() -> OpsIQAgent:
+    global _agent
+    if _agent is None:
+        _agent = OpsIQAgent()
+    return _agent
 
 
 def _strip_mention(text: str) -> str:
@@ -144,5 +150,5 @@ async def _run_agent(query: str, session_id: str) -> dict:
     """
     loop = asyncio.get_running_loop()
     return await loop.run_in_executor(
-        None, partial(_agent.query, query, session_id)
+        None, partial(_get_agent().query, query, session_id)
     )

@@ -47,6 +47,12 @@ curl -X POST http://localhost:8000/query \
   -d '{"query": "Show me all open P1 alerts"}'
 ```
 
+## API Keys
+
+OpsIQ requires your own Anthropic API key for self-hosted deployments. Get one at [console.anthropic.com](https://console.anthropic.com).
+
+Each user is responsible for their own API usage and costs when self-hosting. OpsIQ Cloud (coming soon) includes API access in the subscription price.
+
 ## 🔧 Configuration
 
 Copy `.env.example` to `.env` and fill in the credentials you want to enable.
