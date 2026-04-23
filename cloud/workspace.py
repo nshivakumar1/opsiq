@@ -33,24 +33,28 @@ async def get_or_create_workspace(
             .filter(Workspace.auth0_user_id == auth0_user_id)
             .first()
         )
-        if workspace:
-            return workspace
+        if not workspace:
+            workspace = Workspace(
+                id=str(uuid.uuid4()),
+                name=(email.split("@")[0] + "'s workspace" if email else "My Workspace"),
+                slug=_make_slug(email) if email else f"workspace-{uuid.uuid4().hex[:6]}",
+                auth0_user_id=auth0_user_id,
+                email=email,
+                plan="free",
+                subscription_status="active",
+                query_count_month=0,
+                query_count_reset_at=datetime.utcnow(),
+            )
+            db.add(workspace)
+            db.commit()
+            db.refresh(workspace)
+            logger.info("Created workspace %s for %s", workspace.id, email or auth0_user_id)
 
-        workspace = Workspace(
-            id=str(uuid.uuid4()),
-            name=email.split("@")[0],
-            slug=_make_slug(email),
-            auth0_user_id=auth0_user_id,
-            email=email,
-            plan="free",
-            subscription_status="active",
-            query_count_month=0,
-            query_count_reset_at=datetime.utcnow(),
-        )
-        db.add(workspace)
-        db.commit()
-        db.refresh(workspace)
-        logger.info("Created workspace %s for %s", workspace.id, email)
+        # Backfill email on existing workspaces that were created without one
+        if not workspace.email and email:
+            workspace.email = email
+            db.commit()
+
         return workspace
 
     except Exception:

@@ -23,6 +23,7 @@ function Auth0ProviderWithNavigate({ children }) {
 
   const authorizationParams = {
     redirect_uri: window.location.origin + '/app',
+    scope: 'openid profile email',
     // Only include audience when configured — undefined audience can produce
     // a malformed authorization URL in some SDK versions.
     ...(audience ? { audience } : {}),
