@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter, useNavigate } from 'react-router-dom'
 import { Auth0Provider } from '@auth0/auth0-react'
 import './index.css'
 import App from './App.jsx'
@@ -8,22 +9,26 @@ const domain   = import.meta.env.VITE_AUTH0_DOMAIN
 const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID
 const audience = import.meta.env.VITE_AUTH0_AUDIENCE
 
-// Use replaceState so Auth0 finishes writing the token before any navigation.
-// A full page reload (window.location.href) can race ahead of localStorage writes
-// and boot the app unauthenticated, causing an infinite redirect.
-const onRedirectCallback = (appState) => {
-  window.history.replaceState({}, document.title, appState?.returnTo ?? '/app')
-}
+// Auth0Provider needs useNavigate, which requires being inside BrowserRouter.
+// So BrowserRouter wraps Auth0Provider here — NOT inside App.
+function Auth0ProviderWithNavigate({ children }) {
+  const navigate = useNavigate()
 
-// Only include audience when configured — passing undefined causes some
-// Auth0 SDK versions to throw or produce a malformed authorization URL.
-const authorizationParams = {
-  redirect_uri: window.location.origin + '/app',
-  ...(audience ? { audience } : {}),
-}
+  const onRedirectCallback = (appState) => {
+    // Use React Router navigate so the router's internal location stays in sync.
+    // replaceState / window.location.href both bypass React Router and can
+    // cause the BrowserRouter to re-read a stale URL, producing an auth loop.
+    navigate(appState?.returnTo ?? '/app', { replace: true })
+  }
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  const authorizationParams = {
+    redirect_uri: window.location.origin + '/app',
+    // Only include audience when configured — undefined audience can produce
+    // a malformed authorization URL in some SDK versions.
+    ...(audience ? { audience } : {}),
+  }
+
+  return (
     <Auth0Provider
       domain={domain}
       clientId={clientId}
@@ -31,7 +36,17 @@ createRoot(document.getElementById('root')).render(
       cacheLocation="localstorage"
       onRedirectCallback={onRedirectCallback}
     >
-      <App />
+      {children}
     </Auth0Provider>
+  )
+}
+
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <BrowserRouter>
+      <Auth0ProviderWithNavigate>
+        <App />
+      </Auth0ProviderWithNavigate>
+    </BrowserRouter>
   </StrictMode>
 )
