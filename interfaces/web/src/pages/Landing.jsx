@@ -266,21 +266,29 @@ const STEPS = [
 ]
 
 /* ── Pricing ─────────────────────────────────────────────────────────── */
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
 const BASE_PLANS = [
-  { name: 'Free',       accent: '#00d4aa', highlight: false, cta: 'Get started free', href: 'https://github.com/your-org/opsiq',
+  { name: 'Free',       accent: '#00d4aa', highlight: false, cta: 'Get started free',
+    ctaHref: 'https://github.com/nshivakumar1/opsiq', ctaAction: null,
     features: ['Self-hosted deployment','All integrations','Web + CLI interfaces','Bring your own Anthropic key','Community support'],
     monthly: '$0', annual: '$0', annualNote: '' },
-  { name: 'Pro',        accent: '#7c3aed', highlight: true,  cta: 'Start free trial', href: 'https://opsiq.theinfinityloop.space/pricing',
-    features: ['Everything in Free','Hosted on OpsIQ Cloud','API access included','Slack bot provisioned','Priority support'],
-    monthly: '$29', annual: '$23', annualNote: 'billed annually ($276/yr)' },
-  { name: 'Enterprise', accent: '#f0883e', highlight: false, cta: 'Contact sales', href: 'mailto:hello@opsiq.dev',
+  { name: 'Pro',        accent: '#7c3aed', highlight: true,  cta: 'Start free trial →',
+    ctaHref: null, ctaAction: 'checkout',
+    features: ['Everything in Free','Hosted on OpsIQ Cloud','2,000 queries/month','API access included','Priority support'],
+    monthly: '$49', annual: '$39', annualNote: 'billed annually ($468/yr)' },
+  { name: 'Enterprise', accent: '#f0883e', highlight: false, cta: 'Contact sales',
+    ctaHref: 'mailto:hello@opsiq.dev', ctaAction: null,
     features: ['Everything in Pro','SSO + audit logs','Custom integrations','Dedicated infra','SLA + dedicated CSM'],
     monthly: 'Custom', annual: 'Custom', annualNote: '' },
 ]
 
-function PricingCard({ plan, annual, delay }) {
+function PricingCard({ plan, annual, delay, onProClick }) {
   const [ref, visible] = useInView()
   const price = annual ? plan.annual : plan.monthly
+
+  const isProAction = plan.ctaAction === 'checkout'
+
   return (
     <div ref={ref}
       style={{
@@ -325,13 +333,25 @@ function PricingCard({ plan, annual, delay }) {
             </li>
           ))}
         </ul>
-        <a href={plan.href} target="_blank" rel="noreferrer"
-          className="block text-center text-[13px] font-semibold font-sans py-3 rounded-xl transition-all duration-200"
-          style={{ background: plan.highlight ? plan.accent : 'transparent', color: plan.highlight ? '#070b10' : plan.accent, border: `1px solid ${plan.accent}` }}
-          onMouseEnter={e => { if (!plan.highlight) e.currentTarget.style.background = `${plan.accent}15` }}
-          onMouseLeave={e => { if (!plan.highlight) e.currentTarget.style.background = 'transparent' }}>
-          {plan.cta}
-        </a>
+
+        {isProAction ? (
+          <button
+            onClick={onProClick}
+            className="block w-full text-center text-[13px] font-semibold font-sans py-3 rounded-xl transition-all duration-200"
+            style={{ background: plan.accent, color: '#070b10', border: `1px solid ${plan.accent}`, cursor: 'pointer' }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+            {plan.cta}
+          </button>
+        ) : (
+          <a href={plan.ctaHref} target="_blank" rel="noreferrer"
+            className="block text-center text-[13px] font-semibold font-sans py-3 rounded-xl transition-all duration-200"
+            style={{ background: 'transparent', color: plan.accent, border: `1px solid ${plan.accent}` }}
+            onMouseEnter={e => e.currentTarget.style.background = `${plan.accent}15`}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            {plan.cta}
+          </a>
+        )}
       </div>
     </div>
   )
@@ -339,6 +359,37 @@ function PricingCard({ plan, annual, delay }) {
 
 function PricingSection() {
   const [annual, setAnnual] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const { isAuthenticated, loginWithRedirect, getAccessTokenSilently } = useAuth0()
+  const navigate = useNavigate()
+
+  async function handleProClick() {
+    if (!isAuthenticated) {
+      loginWithRedirect({ appState: { returnTo: '/app?upgrade=true' } })
+      return
+    }
+    setLoading(true)
+    try {
+      const token = await getAccessTokenSilently()
+      const res   = await fetch(`${API_BASE}/cloud/billing/checkout`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ plan: 'pro' }),
+      })
+      const data = await res.json()
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url
+      } else {
+        navigate('/app')
+      }
+    } catch (err) {
+      console.error('Checkout error:', err)
+      navigate('/app')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <section id="pricing" className="py-24 px-6" style={{ borderTop: `1px solid ${T.border}` }}>
       <div className="max-w-5xl mx-auto">
@@ -375,7 +426,13 @@ function PricingSection() {
         </FadeIn>
         <div className="grid md:grid-cols-3 gap-5">
           {BASE_PLANS.map((plan, i) => (
-            <PricingCard key={plan.name} plan={plan} annual={annual} delay={i * 0.1} />
+            <PricingCard
+              key={plan.name}
+              plan={plan}
+              annual={annual}
+              delay={i * 0.1}
+              onProClick={loading ? undefined : handleProClick}
+            />
           ))}
         </div>
       </div>

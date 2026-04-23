@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:mariadb.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:spdx.org)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh run:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "mcp__plugin_playwright_playwright__browser_press_key",
+      "mcp__plugin_playwright_playwright__browser_evaluate",
+      "Bash(git rebase:*)",
+      "Bash(git cherry-pick:*)",
+      "Bash(git pull:*)",
+      "Bash(git fetch:*)",
+      "Bash(gh api:*)",
+      "Bash(git branch:*)",
+      "Bash(git reset:*)",
+      "Bash(git remote:*)",
+      "Bash(node:*)",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "WebFetch(domain:opsiq.theinfinityloop.space)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://opsiq.theinfinityloop.space/assets/index-BaxddTuW.js)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://opsiq.theinfinityloop.space/assets/index-CDibnN7e.css)",
+      "Bash(curl -s https://opsiq.theinfinityloop.space/assets/index-BaxddTuW.js)",
+      "Bash(grep -o 'domain:[a-zA-Z_$][a-zA-Z0-9_$]*,clientId')",
+      "Bash(grep -o 'clientId:[A-Za-z_$][A-Za-z0-9_$]*')",
+      "Bash(grep -o '[A-Z_][A-Z0-9_]*=\"[A-Za-z0-9_-]\\\\{20,\\\\}\"')",
+      "Bash(curl -s \"https://theinfinityloop.eu.auth0.com/.well-known/openid-configuration\")",
+      "Bash(curl:*)"
+    ]
+  }
+}

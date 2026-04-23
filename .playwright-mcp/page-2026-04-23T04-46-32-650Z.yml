@@ -1,0 +1,528 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - navigation [ref=e6]:
+      - generic [ref=e7]:
+        - link "XTRACT" [ref=e8] [cursor=pointer]:
+          - /url: ./
+          - img [ref=e11]
+          - paragraph [ref=e14]: XTRACT
+        - generic [ref=e15]:
+          - generic [ref=e16]:
+            - link "Home" [ref=e18] [cursor=pointer]:
+              - /url: ./
+              - paragraph [ref=e20]: Home
+            - link "About" [ref=e22] [cursor=pointer]:
+              - /url: ./about
+              - paragraph [ref=e24]: About
+            - link "Blog" [ref=e26] [cursor=pointer]:
+              - /url: ./blog
+              - paragraph [ref=e28]: Blog
+            - link "Contact" [ref=e30] [cursor=pointer]:
+              - /url: ./contact
+              - paragraph [ref=e32]: Contact
+          - link "Book a call Book a call" [ref=e35] [cursor=pointer]:
+            - /url: https://cal.com
+            - generic [ref=e36]:
+              - paragraph [ref=e39]: Book a call
+              - paragraph [ref=e42]: Book a call
+    - generic [ref=e43]:
+      - generic [ref=e44]:
+        - paragraph [ref=e49]: New
+        - generic [ref=e50]:
+          - generic [ref=e51]:
+            - heading "Intelligent Automation for Modern Businesses." [level=1] [ref=e53]:
+              - generic [ref=e54]: Intelligent
+              - generic [ref=e55]: Automation
+              - generic [ref=e56]: for
+              - generic [ref=e57]: Modern
+              - generic [ref=e58]: Businesses.
+            - paragraph [ref=e60]:
+              - generic [ref=e61]: Xtract
+              - generic [ref=e62]: brings
+              - generic [ref=e63]: AI
+              - generic [ref=e64]: automation
+              - generic [ref=e65]: to
+              - generic [ref=e66]: your
+              - generic [ref=e67]: fingertips
+              - generic [ref=e68]: "&"
+              - generic [ref=e69]: streamline
+              - generic [ref=e70]: tasks.
+          - generic [ref=e71]:
+            - link "Get in touch Get in touch" [ref=e73] [cursor=pointer]:
+              - /url: ./contact
+              - generic [ref=e74]:
+                - paragraph [ref=e77]: Get in touch
+                - paragraph [ref=e81]: Get in touch
+            - link "View services View services" [ref=e84] [cursor=pointer]:
+              - /url: ./#services
+              - generic [ref=e85]:
+                - paragraph [ref=e88]: View services
+                - paragraph [ref=e91]: View services
+      - generic [ref=e103]:
+        - paragraph [ref=e105]: Over 50+ business trust us
+        - list [ref=e108]:
+          - listitem [ref=e109]
+          - listitem [ref=e111]
+          - listitem [ref=e113]
+          - listitem [ref=e115]
+      - generic [ref=e117]:
+        - generic [ref=e118]:
+          - paragraph [ref=e122]: Our Services
+          - generic [ref=e123]:
+            - heading "AI Solutions That Take Your Business to the Next Level" [level=2] [ref=e125]
+            - paragraph [ref=e127]: We design, develop, and implement automation tools that help you work smarter, not harder
+        - generic [ref=e128]:
+          - generic [ref=e129]:
+            - generic [ref=e134]:
+              - generic [ref=e135]:
+                - paragraph [ref=e138]: All Tasks
+                - paragraph [ref=e141]: Waiting for approval
+              - list [ref=e144]:
+                - listitem [ref=e145]:
+                  - generic [ref=e150]:
+                    - paragraph [ref=e152]: Payroll management
+                    - paragraph [ref=e154]: Due on 2nd july
+                - listitem [ref=e157]:
+                  - generic [ref=e162]:
+                    - paragraph [ref=e164]: Employee Tracking
+                    - paragraph [ref=e166]: 2 days ago
+                - listitem [ref=e169]:
+                  - generic [ref=e174]:
+                    - paragraph [ref=e176]: Social media post
+                    - paragraph [ref=e178]: Cancelled by user
+                - listitem [ref=e181]:
+                  - generic [ref=e186]:
+                    - paragraph [ref=e188]: Lead list
+                    - paragraph [ref=e190]: 70% prepared
+                - listitem [ref=e193]:
+                  - generic [ref=e198]:
+                    - paragraph [ref=e200]: Payment reminder
+                    - paragraph [ref=e202]: sent to selected clients
+            - generic [ref=e205]:
+              - paragraph [ref=e209]: Workflow Automation
+              - generic [ref=e210]:
+                - heading "Automate repetitive tasks" [level=3] [ref=e212]
+                - paragraph [ref=e214]: We help you streamline internal operations by automating manual workflows like data entry, reporting, and approval chains saving time and cutting down errors.
+              - generic [ref=e215]:
+                - paragraph [ref=e219]: Internal Task Bots
+                - paragraph [ref=e223]: 100+ Automations
+          - generic [ref=e224]:
+            - generic [ref=e225]:
+              - paragraph [ref=e229]: AI Assistant
+              - generic [ref=e230]:
+                - heading "Delegate Daily Tasks" [level=3] [ref=e232]
+                - paragraph [ref=e234]: From managing calendars to drafting emails and summarizing meetings, our AI assistants work around the clock to keep your business running smarter and faster.
+              - generic [ref=e235]:
+                - paragraph [ref=e239]: Summaries
+                - paragraph [ref=e243]: Scheduling
+                - paragraph [ref=e247]: Many more
+            - generic [ref=e252]:
+              - generic [ref=e256]:
+                - paragraph [ref=e258]: What can I help with?
+                - paragraph [ref=e260]: Weather you want help in customer handling or make changes in your system just give me command
+              - generic [ref=e261]:
+                - generic [ref=e262]:
+                  - generic [ref=e266]: "|"
+                  - paragraph [ref=e273]: Add document
+                - generic [ref=e275]:
+                  - paragraph [ref=e279]: Analyze
+                  - paragraph [ref=e283]: Generate Image
+                  - paragraph [ref=e287]: research
+          - generic [ref=e288]:
+            - generic [ref=e292]:
+              - generic [ref=e293]:
+                - paragraph [ref=e297]: E-mail Sending..
+                - generic [ref=e300]:
+                  - paragraph [ref=e303]: LinkedIn
+                  - paragraph [ref=e306]: IT services
+                  - paragraph [ref=e309]: Founders
+              - generic [ref=e312]:
+                - list [ref=e314]
+                - group "Slideshow pagination controls"
+              - generic [ref=e324]:
+                - paragraph [ref=e326]: Draft
+                - paragraph [ref=e328]: Schedule
+                - paragraph [ref=e330]: Sent
+            - generic [ref=e331]:
+              - paragraph [ref=e335]: Sales & Marketing
+              - generic [ref=e336]:
+                - heading "Accelerate Sales Growth" [level=3] [ref=e338]
+                - paragraph [ref=e340]: AI tools for lead generation, personalized outreach, and automated content creation that scales your sales efforts and builds stronger brand presence.
+              - generic [ref=e341]:
+                - paragraph [ref=e345]: Leads
+                - paragraph [ref=e349]: Content
+                - paragraph [ref=e353]: Social post
+          - generic [ref=e354]:
+            - generic [ref=e355]:
+              - paragraph [ref=e359]: Custom Projects
+              - generic [ref=e360]:
+                - heading "Build Smarter Systems" [level=3] [ref=e362]
+                - paragraph [ref=e364]: Whether you're starting from scratch or enhancing an existing system, we offer strategic consulting and develop custom AI projects aligned with your unique goals.
+              - generic [ref=e365]:
+                - paragraph [ref=e369]: Strategy
+                - paragraph [ref=e373]: Custom AI
+                - paragraph [ref=e377]: Consulting
+            - generic [ref=e381]:
+              - generic [ref=e382]:
+                - paragraph [ref=e384]: Hey David!
+                - paragraph [ref=e386]: Here is your Custom project & schedule
+              - generic [ref=e387]:
+                - generic [ref=e388]:
+                  - paragraph [ref=e392]: "On going project :"
+                  - generic [ref=e397]:
+                    - paragraph [ref=e399]: Customer Support Chatbot
+                    - paragraph [ref=e401]: 90% Finsihed
+                - generic [ref=e406]:
+                  - generic [ref=e407]:
+                    - paragraph [ref=e412]: Schedule
+                    - generic [ref=e413]:
+                      - paragraph [ref=e416]: Mo
+                      - paragraph [ref=e419]: Tu
+                      - paragraph [ref=e422]: We
+                      - paragraph [ref=e425]: Th
+                      - paragraph [ref=e428]: Fr
+                      - paragraph [ref=e431]: Sa
+                      - paragraph [ref=e434]: Su
+                  - generic [ref=e435]:
+                    - generic [ref=e441]:
+                      - paragraph [ref=e443]: Discovery call
+                      - paragraph [ref=e445]: 10:00 am to 10:30 am
+                    - generic [ref=e453]:
+                      - paragraph [ref=e455]: Custom automation
+                      - paragraph [ref=e457]: 06:00 pm to 06:30 pm
+      - generic [ref=e460]:
+        - generic [ref=e461]:
+          - paragraph [ref=e465]: Our Process
+          - generic [ref=e466]:
+            - heading "Our Simple, Smart, and Scalable Process" [level=2] [ref=e468]
+            - paragraph [ref=e470]: We design, develop, and implement automation tools that help you work smarter, not harder
+        - generic [ref=e471]:
+          - generic [ref=e472]:
+            - generic [ref=e473]:
+              - generic [ref=e474]:
+                - paragraph [ref=e477]: Step 1
+                - paragraph [ref=e479]: Smart Analyzing
+              - paragraph [ref=e481]: We assess your needs and identify AI solutions to streamline workflows and improve efficiency.
+            - generic [ref=e484]:
+              - paragraph [ref=e495]: Analyzing current workflow..
+              - generic [ref=e496]:
+                - paragraph [ref=e500]: System check
+                - paragraph [ref=e504]: Process check
+                - paragraph [ref=e508]: Speed check
+                - paragraph [ref=e512]: Manual work
+                - paragraph [ref=e516]: Repetative task
+          - generic [ref=e517]:
+            - generic [ref=e518]:
+              - generic [ref=e519]:
+                - paragraph [ref=e522]: Step 2
+                - paragraph [ref=e524]: AI Development
+              - paragraph [ref=e526]: Our team builds intelligent automation systems tailored to your business processes.
+            - list [ref=e549]:
+              - listitem [ref=e550]:
+                - generic [ref=e552]:
+                  - generic [ref=e553]: "class AutomationTrigger:"
+                  - generic [ref=e554]:
+                    - text: "def __init__(self, threshold):"
+                    - text: self.threshold = threshold
+                    - text: self.status = "inactive"
+                    - text: "def check_trigger(self, value):"
+                    - text: "if value > self.threshold:"
+                    - text: self.status = "active"
+                    - text: return "Automation triggered!"
+                    - text: "else:"
+                    - text: return "No action taken."
+                  - generic [ref=e555]:
+                    - text: "def get_status(self):"
+                    - text: "return f\"Status: {self.status}\""
+              - listitem [ref=e557]:
+                - generic [ref=e559]:
+                  - generic [ref=e560]: "class AutomationTrigger:"
+                  - generic [ref=e561]:
+                    - text: "def __init__(self, threshold):"
+                    - text: self.threshold = threshold
+                    - text: self.status = "inactive"
+                    - text: "def check_trigger(self, value):"
+                    - text: "if value > self.threshold:"
+                    - text: self.status = "active"
+                    - text: return "Automation triggered!"
+                    - text: "else:"
+                    - text: return "No action taken."
+                  - generic [ref=e562]:
+                    - text: "def get_status(self):"
+                    - text: "return f\"Status: {self.status}\""
+          - generic [ref=e564]:
+            - generic [ref=e565]:
+              - generic [ref=e566]:
+                - paragraph [ref=e569]: Step 3
+                - paragraph [ref=e571]: Seamless Integration
+              - paragraph [ref=e573]: We smoothly integrate AI solutions into your existing infrastructure with minimal disruption.
+            - generic [ref=e578]:
+              - paragraph [ref=e585]: Our solution
+              - generic [ref=e593]:
+                - generic [ref=e597]:
+                  - list [ref=e599]
+                  - group "Slideshow pagination controls"
+                - paragraph [ref=e601]: Your stack
+          - generic [ref=e602]:
+            - generic [ref=e603]:
+              - generic [ref=e604]:
+                - paragraph [ref=e607]: Step 4
+                - paragraph [ref=e609]: Continuous Optimization
+              - paragraph [ref=e611]: We refine performance, analyze insights, and enhance automation for long-term growth.
+            - generic [ref=e615]:
+              - generic [ref=e620]:
+                - paragraph [ref=e622]: Chatbot system
+                - paragraph [ref=e624]: Efficiency will increase by 20%
+              - generic [ref=e627]:
+                - generic [ref=e631]:
+                  - paragraph [ref=e633]: Workflow system
+                  - paragraph [ref=e635]: Update available..
+                - generic [ref=e638]:
+                  - list [ref=e640]
+                  - group "Slideshow pagination controls":
+                    - generic:
+                      - button "Previous":
+                        - img "Back Arrow" [ref=e641] [cursor=pointer]
+                      - button "Next":
+                        - img "Next Arrow" [ref=e642] [cursor=pointer]
+                    - generic [ref=e643]:
+                      - button "Scroll to page 1" [ref=e644] [cursor=pointer]
+                      - button "Scroll to page 2" [ref=e646] [cursor=pointer]
+              - generic [ref=e652]:
+                - paragraph [ref=e654]: Sales system
+                - paragraph [ref=e656]: Up to date
+      - generic [ref=e659]:
+        - generic [ref=e660]:
+          - paragraph [ref=e664]: Case Studies
+          - generic [ref=e665]:
+            - heading "See How Smart AI Automation Transforms Businesses" [level=2] [ref=e667]
+            - paragraph [ref=e669]: See how AI automation streamlines operations, boosts and drives growth.
+        - generic [ref=e671]:
+          - generic [ref=e673]:
+            - list [ref=e675]
+            - group "Slideshow pagination controls"
+          - paragraph [ref=e680]: DRAG TO EXPLORE
+      - generic [ref=e682]:
+        - generic [ref=e683]:
+          - paragraph [ref=e687]: Benefits
+          - generic [ref=e688]:
+            - heading "The Key Benefits of AI for Your Business Growth" [level=2] [ref=e690]
+            - paragraph [ref=e692]: Discover how AI automation enhances efficiency, reduces costs, and drives business growth with smarter, faster processes.
+        - generic [ref=e693]:
+          - generic [ref=e700]:
+            - paragraph [ref=e702]: Increased Productivity
+            - paragraph [ref=e704]: Gain actionable insights with AI-driven analytics to improve decision-making and strategy.
+          - generic [ref=e711]:
+            - paragraph [ref=e713]: Better Customer Experience
+            - paragraph [ref=e715]: Personalized AI interactions improve response times, customer engagement, and overall satisfaction.
+          - generic [ref=e722]:
+            - paragraph [ref=e724]: 24/7 Availability
+            - paragraph [ref=e726]: AI-powered systems operate around the clock, ensuring seamless support and execution without downtime.
+          - generic [ref=e733]:
+            - paragraph [ref=e735]: Cost Reduction
+            - paragraph [ref=e737]: AI automation minimizes manual work, cuts operational costs, and optimizes resource allocation for better profitability.
+          - generic [ref=e744]:
+            - paragraph [ref=e746]: Data-Driven Insights
+            - paragraph [ref=e748]: Leverage AI to analyze vast data sets, identify trends, and make smarter, faster, and more accurate business decisions.
+          - generic [ref=e755]:
+            - paragraph [ref=e757]: Scalability & Growth
+            - paragraph [ref=e759]: AI adapts to your business needs, allowing you to scale efficiently without increasing workload or costs.
+      - generic [ref=e760]:
+        - generic [ref=e761]:
+          - paragraph [ref=e765]: Pricing
+          - generic [ref=e766]:
+            - heading "The Best AI Automation, at the Right Price" [level=2] [ref=e768]
+            - paragraph [ref=e770]: Choose a plan that fits your business needs and start automating with AI
+        - generic [ref=e774]:
+          - generic [ref=e775]:
+            - paragraph [ref=e777]: Monthly
+            - paragraph [ref=e782]: Annually
+          - generic [ref=e783]:
+            - generic [ref=e784]:
+              - generic [ref=e785]:
+                - paragraph [ref=e790]: Starter
+                - heading "$37/month" [level=2] [ref=e792]
+                - paragraph [ref=e795]: Perfect for small businesses starting with AI automation.
+              - link "Choose this plan Choose this plan" [ref=e797] [cursor=pointer]:
+                - /url: https://framer.link/kanishkdubey
+                - generic [ref=e798]:
+                  - paragraph [ref=e801]: Choose this plan
+                  - paragraph [ref=e804]: Choose this plan
+              - generic [ref=e805]:
+                - paragraph [ref=e807]: "What's Included:"
+                - paragraph [ref=e812]: Basic workflow automation
+                - paragraph [ref=e817]: AI-powered personal assistant
+                - paragraph [ref=e822]: Standard analytics & reporting
+                - paragraph [ref=e827]: Email & chat support
+                - paragraph [ref=e832]: Up to 3 AI integrations
+            - generic [ref=e833]:
+              - generic [ref=e834]:
+                - generic [ref=e835]:
+                  - paragraph [ref=e840]: Professional
+                  - paragraph [ref=e844]: Popular
+                - heading "$75/month" [level=2] [ref=e846]
+                - paragraph [ref=e849]: Perfect for small businesses starting with AI automation.
+              - link "Choose this plan Choose this plan" [ref=e851] [cursor=pointer]:
+                - /url: https://framer.link/kanishkdubey
+                - generic [ref=e852]:
+                  - paragraph [ref=e855]: Choose this plan
+                  - paragraph [ref=e858]: Choose this plan
+              - generic [ref=e859]:
+                - paragraph [ref=e861]: "What's Included:"
+                - paragraph [ref=e866]: Advanced workflow automation
+                - paragraph [ref=e871]: AI-driven sales & marketing tools
+                - paragraph [ref=e876]: Enhanced data analytics & insights
+                - paragraph [ref=e881]: Priority customer support
+                - paragraph [ref=e886]: Up to 10 AI integrations
+            - generic [ref=e887]:
+              - generic [ref=e888]:
+                - paragraph [ref=e893]: Enterprise
+                - heading "Custom" [level=2] [ref=e895]
+                - paragraph [ref=e898]: Perfect for small businesses starting with AI automation.
+              - link "Schedule a call Schedule a call" [ref=e900] [cursor=pointer]:
+                - /url: https://framer.link/kanishkdubey
+                - generic [ref=e901]:
+                  - paragraph [ref=e904]: Schedule a call
+                  - paragraph [ref=e907]: Schedule a call
+              - generic [ref=e908]:
+                - paragraph [ref=e910]: "What's Included:"
+                - paragraph [ref=e915]: Fully customizable AI automation
+                - paragraph [ref=e920]: Dedicated AI business consultant
+                - paragraph [ref=e925]: Enterprise-grade compliance
+                - paragraph [ref=e930]: 24/7 VIP support
+                - paragraph [ref=e935]: Unlimited AI integrations
+      - generic [ref=e936]:
+        - generic [ref=e937]:
+          - paragraph [ref=e941]: Testimonials
+          - generic [ref=e942]:
+            - heading "Why Businesses Love Our AI Solutions" [level=2] [ref=e944]
+            - paragraph [ref=e946]: Real businesses, real results with AI automation.
+        - generic [ref=e947]:
+          - generic [ref=e950]:
+            - paragraph [ref=e959]: "\"AI automation transformed our operations by eliminating repetitive tasks and improving efficiency. Scaling our workflow has never been easier!\""
+            - generic [ref=e963]:
+              - paragraph [ref=e965]: James Carter
+              - paragraph [ref=e967]: CEO at TechFlow Solutions
+          - generic [ref=e970]:
+            - paragraph [ref=e979]: "\"With AI, we cut manual work and improved accuracy. Our team now focuses on high-impact tasks while automation handles the rest!\""
+            - generic [ref=e983]:
+              - paragraph [ref=e985]: Sophia Martinez
+              - paragraph [ref=e987]: Operations Manager at NexaCorp
+          - generic [ref=e990]:
+            - paragraph [ref=e999]: "\"AI-driven insights doubled our sales efficiency. We now engage leads at the right time with smarter, data-backed decisions!\""
+            - generic [ref=e1003]:
+              - paragraph [ref=e1005]: David Reynolds
+              - paragraph [ref=e1007]: Head of Sales at GrowthPeak
+          - generic [ref=e1010]:
+            - paragraph [ref=e1019]: "\"Customer support is now seamless. Our response time improved drastically, and satisfaction levels are at an all-time high, thanks to xtract\""
+            - generic [ref=e1023]:
+              - paragraph [ref=e1025]: Emily Wong
+              - paragraph [ref=e1027]: Customer Success Lead at SupportHive
+      - generic [ref=e1028]:
+        - generic [ref=e1029]:
+          - paragraph [ref=e1033]: FAQs
+          - generic [ref=e1034]:
+            - heading "We’ve Got the Answers You’re Looking For" [level=2] [ref=e1036]
+            - paragraph [ref=e1038]: Quick answers to your AI automation questions.
+        - generic [ref=e1041]:
+          - paragraph [ref=e1046] [cursor=pointer]: How can AI automation help my business?
+          - paragraph [ref=e1053] [cursor=pointer]: Is AI automation difficult to integrate?
+          - paragraph [ref=e1060] [cursor=pointer]: What industries can benefit from AI automation?
+          - paragraph [ref=e1067] [cursor=pointer]: Do I need technical knowledge to use AI automation?
+          - paragraph [ref=e1074] [cursor=pointer]: What kind of support do you offer?
+          - img [ref=e1080]
+        - generic [ref=e1082]:
+          - heading "Let AI do the Work so you can Scale Faster" [level=2] [ref=e1084]
+          - paragraph [ref=e1086]: Book a Call Today and Start Automating
+          - link "Book a free call Book a free call" [ref=e1088] [cursor=pointer]:
+            - /url: https://framer.link/kanishkdubey
+            - generic [ref=e1089]:
+              - paragraph [ref=e1092]: Book a free call
+              - paragraph [ref=e1096]: Book a free call
+    - link "Another AI Template Another AI Template" [ref=e1099] [cursor=pointer]:
+      - /url: https://www.framer.com/marketplace/templates/knotch/
+      - generic [ref=e1100]:
+        - paragraph [ref=e1103]: Another AI Template
+        - paragraph [ref=e1107]: Another AI Template
+    - link "Use For Free Use For Free" [ref=e1110] [cursor=pointer]:
+      - /url: https://framer.link/yXMmlik
+      - generic [ref=e1111]:
+        - paragraph [ref=e1114]: Use For Free
+        - paragraph [ref=e1118]: Use For Free
+    - contentinfo [ref=e1122]:
+      - generic [ref=e1123]:
+        - generic [ref=e1124]:
+          - generic [ref=e1125]:
+            - link "XTRACT" [ref=e1126] [cursor=pointer]:
+              - /url: ./
+              - img [ref=e1129]
+              - paragraph [ref=e1132]: XTRACT
+            - paragraph [ref=e1134]: Xtract – Automate Smarter, Optimize Faster, and Grow Stronger.
+          - generic [ref=e1135]:
+            - paragraph [ref=e1137]: Join our newsletter
+            - generic [ref=e1140]:
+              - textbox "name@email.com" [ref=e1141]
+              - button "Subscribe" [ref=e1143] [cursor=pointer]
+        - generic [ref=e1144]:
+          - generic [ref=e1145]:
+            - paragraph [ref=e1147]: Links
+            - paragraph [ref=e1149]:
+              - link "Services" [ref=e1150] [cursor=pointer]:
+                - /url: ./#services
+            - paragraph [ref=e1152]:
+              - link "Process" [ref=e1153] [cursor=pointer]:
+                - /url: ./#process
+            - paragraph [ref=e1155]:
+              - link "Case studies" [ref=e1156] [cursor=pointer]:
+                - /url: ./#cases
+            - paragraph [ref=e1158]:
+              - link "Benefits" [ref=e1159] [cursor=pointer]:
+                - /url: ./#benefits
+            - paragraph [ref=e1161]:
+              - link "Pricing" [ref=e1162] [cursor=pointer]:
+                - /url: ./#pricing
+          - generic [ref=e1163]:
+            - paragraph [ref=e1165]: Pages
+            - paragraph [ref=e1167]:
+              - link "Home" [ref=e1168] [cursor=pointer]:
+                - /url: ./
+            - paragraph [ref=e1170]:
+              - link "About" [ref=e1171] [cursor=pointer]:
+                - /url: ./about
+            - paragraph [ref=e1173]:
+              - link "Blog" [ref=e1174] [cursor=pointer]:
+                - /url: ./blog
+            - paragraph [ref=e1176]:
+              - link "Contact" [ref=e1177] [cursor=pointer]:
+                - /url: ./contact
+            - paragraph [ref=e1179]:
+              - link "404" [ref=e1180] [cursor=pointer]:
+                - /url: ./404
+          - generic [ref=e1181]:
+            - paragraph [ref=e1183]: Socials
+            - paragraph [ref=e1185]:
+              - link "Instagram" [ref=e1186] [cursor=pointer]:
+                - /url: https://instagram.com
+            - paragraph [ref=e1188]:
+              - link "Facebook" [ref=e1189] [cursor=pointer]:
+                - /url: https://facebook.com
+            - paragraph [ref=e1191]:
+              - link "Linkedin" [ref=e1192] [cursor=pointer]:
+                - /url: https://linkedin.com
+            - paragraph [ref=e1194]:
+              - link "Twitter" [ref=e1195] [cursor=pointer]:
+                - /url: https://x.com
+    - contentinfo [ref=e1198]:
+      - generic [ref=e1199]:
+        - paragraph [ref=e1201]:
+          - link "Logo by flaticon" [ref=e1202] [cursor=pointer]:
+            - /url: https://www.flaticon.com/
+        - paragraph [ref=e1204]:
+          - link "Visioned and Crafted by Kanishk Dubey" [ref=e1205] [cursor=pointer]:
+            - /url: https://x.com/xlauncherx7
+        - paragraph [ref=e1207]: © All right reserved
+  - generic:
+    - link "Create a free website with Framer, the website builder loved by startups, designers and agencies.":
+      - /url: https://www.framer.com
+      - paragraph [ref=e1208] [cursor=pointer]: Create a free website with Framer, the website builder loved by startups, designers and agencies.
+  - img [ref=e1209]

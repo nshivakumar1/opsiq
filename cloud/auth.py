@@ -15,24 +15,14 @@ AUTH0_DOMAIN   = os.getenv("AUTH0_DOMAIN", "")
 AUTH0_AUDIENCE = os.getenv("AUTH0_AUDIENCE", "")
 
 
-async def get_current_user_optional(request: Request) -> dict | None:
+async def validate_bearer_token(token: str) -> dict | None:
     """
-    Validates Auth0 JWT if present and Auth0 is configured.
-    Returns decoded payload dict, or None if:
-      - AUTH0_DOMAIN env var is not set (OSS mode)
-      - No Authorization header
-      - Token is invalid / expired
-    Never raises — always allows the request through.
+    Validates a raw JWT string against Auth0.
+    Returns the decoded payload, or None on any failure.
+    Returns None immediately if AUTH0_DOMAIN is not configured (OSS mode).
     """
     if not AUTH0_DOMAIN:
         return None
-
-    auth_header = request.headers.get("Authorization", "")
-    if not auth_header.startswith("Bearer "):
-        return None
-
-    token = auth_header.split(" ", 1)[1]
-
     try:
         jwks_url = f"https://{AUTH0_DOMAIN}/.well-known/jwks.json"
         async with httpx.AsyncClient() as client:
@@ -44,18 +34,32 @@ async def get_current_user_optional(request: Request) -> dict | None:
             (key for key in jwks["keys"] if key["kid"] == unverified_header["kid"]),
             None,
         )
-
         if not rsa_key:
             return None
 
-        payload = jwt.decode(
+        return jwt.decode(
             token,
             rsa_key,
             algorithms=["RS256"],
             audience=AUTH0_AUDIENCE,
             issuer=f"https://{AUTH0_DOMAIN}/",
         )
-        return payload
-
     except (JWTError, Exception):
         return None
+
+
+async def get_current_user_optional(request: Request) -> dict | None:
+    """
+    Validates Auth0 JWT if present and Auth0 is configured.
+    Returns decoded payload dict, or None if:
+      - AUTH0_DOMAIN env var is not set (OSS mode)
+      - No Authorization header
+      - Token is invalid / expired
+    Never raises — always allows the request through.
+    """
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return None
+
+    token = auth_header.split(" ", 1)[1]
+    return await validate_bearer_token(token)
