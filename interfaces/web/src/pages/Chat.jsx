@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth0 } from '@auth0/auth0-react'
 import MessageBubble from '../components/MessageBubble.jsx'
 import InputBar from '../components/InputBar.jsx'
+import UserMenu from '../components/UserMenu.jsx'
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 const WS_BASE = import.meta.env.VITE_WS_URL
   ? import.meta.env.VITE_WS_URL.replace('https://', 'wss://').replace('http://', 'ws://')
   : 'ws://localhost:8000'
@@ -71,7 +74,7 @@ const EXAMPLES = [
 
 const INTEGRATIONS = ['GitHub', 'Datadog', 'Jira', 'Grafana', 'Slack', 'Confluence', 'Prometheus', 'New Relic']
 
-function EmptyState({ onSelect, wsStatus }) {
+function EmptyState({ onSelect, wsStatus, firstName }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
       <div className="inline-flex items-center gap-2 text-[11px] font-medium font-sans px-3 py-1.5 rounded-full mb-8 animate-badge-glow"
@@ -82,12 +85,17 @@ function EmptyState({ onSelect, wsStatus }) {
 
       <h1 className="font-syne font-bold text-white leading-[1.1] mb-4 max-w-lg"
         style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.4rem)', letterSpacing: '-0.02em' }}>
-        Intelligent Ops for{' '}
-        <span style={{ color: '#00d4aa' }}>Modern Teams.</span> ⚡
+        {firstName
+          ? <>Welcome back, <span style={{ color: '#00d4aa' }}>{firstName}.</span> ⚡</>
+          : <>Intelligent Ops for{' '}<span style={{ color: '#00d4aa' }}>Modern Teams.</span> ⚡</>
+        }
       </h1>
 
       <p className="text-base font-sans mb-10 max-w-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
-        Ask anything about your stack. OpsIQ orchestrates your tools and answers instantly.
+        {firstName
+          ? 'What do you want to query today?'
+          : 'Ask anything about your stack. OpsIQ orchestrates your tools and answers instantly.'
+        }
       </p>
 
       <div className="flex flex-wrap justify-center gap-2 mb-12">
@@ -135,6 +143,8 @@ function EmptyState({ onSelect, wsStatus }) {
 
 /* ── Chat page ───────────────────────────────────────────────────────── */
 export default function Chat() {
+  const { user, getAccessTokenSilently } = useAuth0()
+
   const [messages,      setMessages]      = useState([])
   const [input,         setInput]         = useState('')
   const [streaming,     setStreaming]     = useState(false)
@@ -146,16 +156,26 @@ export default function Chat() {
   const bottomRef      = useRef(null)
   const reconnectTimer = useRef(null)
 
-  const connect = useCallback(() => {
+  const connect = useCallback(async () => {
     if (ws.current?.readyState === WebSocket.OPEN) return
     setWsStatus(WS_CONNECTING)
-    const socket = new WebSocket(`${WS_BASE}/ws/${sessionId.current}`)
+
+    // Attach token as query param (WS doesn't support headers)
+    let wsUrl = `${WS_BASE}/ws/${sessionId.current}`
+    try {
+      const token = await getAccessTokenSilently()
+      wsUrl += `?token=${encodeURIComponent(token)}`
+    } catch {
+      // OSS / no Auth0 configured — connect without token
+    }
+
+    const socket = new WebSocket(wsUrl)
     socket.onopen    = () => setWsStatus(WS_OPEN)
     socket.onclose   = () => { setWsStatus(WS_CLOSED); reconnectTimer.current = setTimeout(connect, 3000) }
     socket.onerror   = () => socket.close()
     socket.onmessage = (e) => handleWsEvent(JSON.parse(e.data))
     ws.current = socket
-  }, []) // eslint-disable-line
+  }, [getAccessTokenSilently]) // eslint-disable-line
 
   useEffect(() => {
     connect()
@@ -207,7 +227,7 @@ export default function Chat() {
     }
   }
 
-  function sendQuery() {
+  async function sendQuery() {
     const query = input.trim()
     if (!query || streaming || ws.current?.readyState !== WebSocket.OPEN) return
     setMessages(prev => [
@@ -239,6 +259,8 @@ export default function Chat() {
     setStreaming(true)
     ws.current.send(JSON.stringify({ query: text }))
   }
+
+  const firstName = user?.given_name || user?.name?.split(' ')[0] || null
 
   return (
     <div className="chat-root" style={{ background: '#070b10' }}>
@@ -302,13 +324,14 @@ export default function Chat() {
             onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}>
             New session
           </button>
+          {user && <UserMenu user={user} />}
         </div>
       </header>
 
       {/* Messages */}
       <main className="relative z-10 flex-1 overflow-y-auto px-4 py-6">
         <div className="max-w-2xl mx-auto space-y-5">
-          {messages.length === 0 && <EmptyState onSelect={selectExample} wsStatus={wsStatus} />}
+          {messages.length === 0 && <EmptyState onSelect={selectExample} wsStatus={wsStatus} firstName={firstName} />}
           {messages.map(msg => (
             <MessageBubble key={msg.id} message={msg} />
           ))}
