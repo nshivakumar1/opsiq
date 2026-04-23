@@ -61,17 +61,21 @@ function AssistantBubble({ message }) {
           <div
             className="rounded-2xl rounded-tl-sm px-4 py-3 relative overflow-hidden"
             style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: message.isError ? 'rgba(240,136,62,0.06)' : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${message.isError ? 'rgba(240,136,62,0.25)' : 'rgba(255,255,255,0.08)'}`,
             }}
           >
-            {/* Violet left accent */}
+            {/* Left accent — amber for errors, violet for normal */}
             <div
               className="absolute left-0 top-3 bottom-3 w-px rounded-full"
-              style={{ background: 'linear-gradient(to bottom, transparent, #7c3aed, transparent)' }}
+              style={{
+                background: message.isError
+                  ? 'linear-gradient(to bottom, transparent, #f0883e, transparent)'
+                  : 'linear-gradient(to bottom, transparent, #7c3aed, transparent)',
+              }}
             />
 
-            <div className="prose-opsiq text-sm pl-3">
+            <div className="prose-opsiq text-sm pl-3" style={{ color: message.isError ? '#f0883e' : undefined }}>
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {message.content}
               </ReactMarkdown>

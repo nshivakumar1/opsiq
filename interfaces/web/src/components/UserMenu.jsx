@@ -51,6 +51,11 @@ export default function UserMenu({ user }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
+  // returnTo must also be listed in Auth0 dashboard → Applications → [app] → Allowed Logout URLs
+  function handleSignOut() {
+    logout({ logoutParams: { returnTo: window.location.origin } })
+  }
+
   useEffect(() => {
     function handleClick(e) {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false)
@@ -134,7 +139,7 @@ export default function UserMenu({ user }) {
 
           {/* Sign out */}
           <button
-            onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
+            onClick={handleSignOut}
             style={{
               display: 'block',
               width: '100%',

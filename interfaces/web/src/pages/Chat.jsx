@@ -20,6 +20,7 @@ function getOrCreateSessionId() {
 const WS_CONNECTING = 'connecting'
 const WS_OPEN       = 'open'
 const WS_CLOSED     = 'closed'
+const WS_REST       = 'rest'   // WS timed out — REST fallback active
 
 /* ── Starfield ───────────────────────────────────────────────────────── */
 const STARS = Array.from({ length: 100 }, (_, i) => ({
@@ -53,7 +54,8 @@ function WsStatusPill({ status }) {
     [WS_OPEN]:       { color: '#00d4aa', label: 'Connected' },
     [WS_CONNECTING]: { color: '#fbbf24', label: 'Connecting…' },
     [WS_CLOSED]:     { color: '#f87171', label: 'Offline' },
-  }[status]
+    [WS_REST]:       { color: '#f0883e', label: 'REST fallback' },
+  }[status] ?? { color: '#f87171', label: 'Offline' }
   return (
     <div className="flex items-center gap-1.5">
       <span className="w-1.5 h-1.5 rounded-full"
@@ -74,7 +76,7 @@ const EXAMPLES = [
 
 const INTEGRATIONS = ['GitHub', 'Datadog', 'Jira', 'Grafana', 'Slack', 'Confluence', 'Prometheus', 'New Relic']
 
-function EmptyState({ onSelect, wsStatus, firstName }) {
+function EmptyState({ onSelect, canSend, firstName }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
       <div className="inline-flex items-center gap-2 text-[11px] font-medium font-sans px-3 py-1.5 rounded-full mb-8 animate-badge-glow"
@@ -114,7 +116,7 @@ function EmptyState({ onSelect, wsStatus, firstName }) {
       <div className="grid gap-2.5 w-full max-w-md">
         {EXAMPLES.map(({ icon, text }) => (
           <button key={text} onClick={() => onSelect(text)}
-            disabled={wsStatus !== WS_OPEN}
+            disabled={!canSend}
             className="group flex items-center gap-3 text-left text-[13px] rounded-2xl px-5 py-3.5 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed font-sans"
             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}
             onMouseEnter={e => {
@@ -151,41 +153,124 @@ export default function Chat() {
   const [wsStatus,      setWsStatus]      = useState(WS_CLOSED)
   const [creditsBanner, setCreditsBanner] = useState(false)
 
-  const sessionId      = useRef(getOrCreateSessionId())
-  const ws             = useRef(null)
-  const bottomRef      = useRef(null)
-  const reconnectTimer = useRef(null)
+  const sessionId       = useRef(getOrCreateSessionId())
+  const ws              = useRef(null)
+  const bottomRef       = useRef(null)
+  const reconnectTimer  = useRef(null)
+  const wsConnectTimer  = useRef(null)
+  // Refs for WS callbacks to access latest values without stale closures
+  const streamingRef    = useRef(false)
+  const pendingQueryRef = useRef('')
+  const sendQueryRESTRef = useRef(null)
 
+  useEffect(() => { streamingRef.current = streaming }, [streaming])
+
+  /* ── REST fallback ───────────────────────────────────────────────── */
+  async function sendQueryREST(query) {
+    try {
+      const headers = { 'Content-Type': 'application/json' }
+      try {
+        const token = await getAccessTokenSilently()
+        if (token) headers['Authorization'] = `Bearer ${token}`
+      } catch { /* OSS mode — no token */ }
+
+      const res = await fetch(`${API_BASE}/query`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ query, session_id: sessionId.current }),
+      })
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+
+      const data = await res.json()
+
+      if (data.status === 402 || /credit|billing|quota|payment/i.test(data.answer ?? ''))
+        setCreditsBanner(true)
+
+      setMessages(prev => prev.map(msg =>
+        (msg.role === 'assistant' && msg.streaming)
+          ? { ...msg, content: data.answer, toolsUsed: data.tools_used ?? [], streaming: false }
+          : msg
+      ))
+    } catch (err) {
+      console.error('REST fallback error:', err)
+      setMessages(prev => prev.map(msg =>
+        (msg.role === 'assistant' && msg.streaming)
+          ? { ...msg, content: `⚠️ Could not reach OpsIQ backend — ${err.message}`, toolsUsed: [], streaming: false, isError: true }
+          : msg
+      ))
+    } finally {
+      setStreaming(false)
+      pendingQueryRef.current = ''
+    }
+  }
+
+  // Keep ref current so WS callbacks always call the latest version
+  sendQueryRESTRef.current = sendQueryREST
+
+  /* ── WebSocket connection ────────────────────────────────────────── */
   const connect = useCallback(async () => {
     if (ws.current?.readyState === WebSocket.OPEN) return
     setWsStatus(WS_CONNECTING)
 
-    // Attach token as query param (WS doesn't support headers)
     let wsUrl = `${WS_BASE}/ws/${sessionId.current}`
     try {
       const token = await getAccessTokenSilently()
       wsUrl += `?token=${encodeURIComponent(token)}`
-    } catch {
-      // OSS / no Auth0 configured — connect without token
-    }
+    } catch { /* OSS mode */ }
+
+    // 10s timeout — if WS doesn't open, mark REST fallback available
+    wsConnectTimer.current = setTimeout(() => {
+      if (ws.current?.readyState !== WebSocket.OPEN) {
+        console.warn('WebSocket connection timed out — REST fallback active')
+        setWsStatus(WS_REST)
+      }
+    }, 10000)
 
     const socket = new WebSocket(wsUrl)
-    socket.onopen    = () => setWsStatus(WS_OPEN)
-    socket.onclose   = () => { setWsStatus(WS_CLOSED); reconnectTimer.current = setTimeout(connect, 3000) }
-    socket.onerror   = () => socket.close()
+
+    socket.onopen = () => {
+      clearTimeout(wsConnectTimer.current)
+      setWsStatus(WS_OPEN)
+    }
+
+    socket.onerror = (err) => {
+      console.error('WebSocket error:', err)
+      // onclose fires immediately after — REST fallback handled there
+    }
+
+    socket.onclose = (event) => {
+      clearTimeout(wsConnectTimer.current)
+      setWsStatus(WS_CLOSED)
+
+      // Mid-stream abnormal close → rescue the in-flight query via REST
+      if (event.code !== 1000 && streamingRef.current && pendingQueryRef.current) {
+        console.warn(`WebSocket closed mid-stream (code ${event.code}) — falling back to REST`)
+        sendQueryRESTRef.current?.(pendingQueryRef.current)
+      }
+
+      // Reconnect in background
+      reconnectTimer.current = setTimeout(connect, 3000)
+    }
+
     socket.onmessage = (e) => handleWsEvent(JSON.parse(e.data))
     ws.current = socket
   }, [getAccessTokenSilently]) // eslint-disable-line
 
   useEffect(() => {
     connect()
-    return () => { clearTimeout(reconnectTimer.current); ws.current?.close() }
+    return () => {
+      clearTimeout(reconnectTimer.current)
+      clearTimeout(wsConnectTimer.current)
+      ws.current?.close()
+    }
   }, [connect])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  /* ── WS event handler ────────────────────────────────────────────── */
   function handleWsEvent(event) {
     switch (event.type) {
       case 'tool_call':
@@ -210,26 +295,32 @@ export default function Chat() {
             return [...prev.slice(0,-1), { ...last, streaming: false, toolsUsed: event.tools_used ?? [] }]
           return prev
         })
-        setStreaming(false); break
+        setStreaming(false)
+        pendingQueryRef.current = ''
+        break
       case 'error': {
         const msg = event.message ?? ''
-        if (event.status === 402 || /credit|billing|quota|payment/i.test(msg))
+        if (event.status === 402 || event.code === 'insufficient_credits' || /credit|billing|quota|payment/i.test(msg))
           setCreditsBanner(true)
         setMessages(prev => {
           const last = prev[prev.length - 1]
           if (last?.role === 'assistant' && last.streaming)
-            return [...prev.slice(0,-1), { ...last, streaming: false, content: `**Error:** ${msg}`, toolsUsed: [] }]
+            return [...prev.slice(0,-1), { ...last, streaming: false, content: `⚠️ ${msg}`, isError: true, toolsUsed: [] }]
           return prev
         })
-        setStreaming(false); break
+        setStreaming(false)
+        pendingQueryRef.current = ''
+        break
       }
       default: break
     }
   }
 
+  /* ── Send ────────────────────────────────────────────────────────── */
   async function sendQuery() {
     const query = input.trim()
-    if (!query || streaming || ws.current?.readyState !== WebSocket.OPEN) return
+    if (!query || streaming) return
+
     setMessages(prev => [
       ...prev,
       { id: crypto.randomUUID(), role: 'user',      content: query },
@@ -237,7 +328,14 @@ export default function Chat() {
     ])
     setInput('')
     setStreaming(true)
-    ws.current.send(JSON.stringify({ query }))
+    pendingQueryRef.current = query
+
+    if (ws.current?.readyState === WebSocket.OPEN) {
+      ws.current.send(JSON.stringify({ query }))
+    } else {
+      // WS not available — use REST directly
+      await sendQueryREST(query)
+    }
   }
 
   function newSession() {
@@ -246,22 +344,31 @@ export default function Chat() {
     sessionId.current = id
     setMessages([])
     setStreaming(false)
+    pendingQueryRef.current = ''
     ws.current?.close()
   }
 
-  function selectExample(text) {
-    if (streaming || ws.current?.readyState !== WebSocket.OPEN) return
+  async function selectExample(text) {
+    if (streaming) return
+
     setMessages(prev => [
       ...prev,
       { id: crypto.randomUUID(), role: 'user',      content: text },
       { id: crypto.randomUUID(), role: 'assistant', content: '', streaming: true, toolEvents: [], toolsUsed: [] },
     ])
     setStreaming(true)
-    ws.current.send(JSON.stringify({ query: text }))
+    pendingQueryRef.current = text
+
+    if (ws.current?.readyState === WebSocket.OPEN) {
+      ws.current.send(JSON.stringify({ query: text }))
+    } else {
+      await sendQueryREST(text)
+    }
   }
 
   const firstName = user?.given_name || user?.name?.split(' ')[0] || null
 
+  /* ── Render ──────────────────────────────────────────────────────── */
   return (
     <div className="chat-root" style={{ background: '#070b10' }}>
       <Starfield />
@@ -331,7 +438,13 @@ export default function Chat() {
       {/* Messages */}
       <main className="relative z-10 flex-1 overflow-y-auto px-4 py-6">
         <div className="max-w-2xl mx-auto space-y-5">
-          {messages.length === 0 && <EmptyState onSelect={selectExample} wsStatus={wsStatus} firstName={firstName} />}
+          {messages.length === 0 && (
+            <EmptyState
+              onSelect={selectExample}
+              canSend={!streaming}
+              firstName={firstName}
+            />
+          )}
           {messages.map(msg => (
             <MessageBubble key={msg.id} message={msg} />
           ))}
@@ -339,13 +452,13 @@ export default function Chat() {
         </div>
       </main>
 
-      {/* Input */}
+      {/* Input — enabled whenever not actively streaming, WS or REST */}
       <div className="relative z-10 shrink-0 max-w-2xl mx-auto w-full">
         <InputBar
           value={input}
           onChange={setInput}
           onSubmit={sendQuery}
-          disabled={streaming || wsStatus !== WS_OPEN}
+          disabled={streaming}
         />
       </div>
     </div>
