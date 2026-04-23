@@ -56,31 +56,31 @@ app.add_middleware(
 
 app.include_router(slack_app_router)
 
+# ── REST Endpoints (registered first — takes priority over catch-all) ─────────
+
+@app.get("/health", response_model=HealthResponse)
+async def health():
+    return HealthResponse(status="ok", version="0.1.0")
+
+
 # ── Static web UI (only if the Vite build output exists) ─────────────────────
 
 if _WEB_DIST.is_dir():
-    # Serve Vite-generated assets (JS/CSS chunks) under /assets
     app.mount("/assets", StaticFiles(directory=_WEB_DIST / "assets"), name="assets")
 
     @app.get("/", include_in_schema=False)
     async def serve_ui():
         return FileResponse(_WEB_DIST / "index.html")
 
-    # Catch-all: return index.html for any non-API path (SPA client-side routing)
+    # Catch-all for SPA client-side routing — registered last so API routes win
     @app.get("/{full_path:path}", include_in_schema=False)
     async def spa_fallback(full_path: str):
-        # Don't intercept API or WS routes
-        api_prefixes = ("query", "sessions", "health", "slack", "ws", "assets")
-        if any(full_path.startswith(p) for p in api_prefixes):
-            raise HTTPException(status_code=404)
         return FileResponse(_WEB_DIST / "index.html")
 
-
-# ── REST Endpoints ────────────────────────────────────────────────────────────
-
-@app.get("/health", response_model=HealthResponse)
-async def health():
-    return HealthResponse(status="ok", version="0.1.0")
+else:
+    @app.get("/", include_in_schema=False)
+    async def root():
+        return HealthResponse(status="ok", version="0.1.0")
 
 
 @app.get("/", include_in_schema=False)
