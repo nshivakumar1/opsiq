@@ -2,6 +2,7 @@
 OpsIQ Cloud — Stripe billing
 """
 import asyncio
+import json
 import logging
 import os
 
@@ -91,12 +92,12 @@ async def create_customer_portal_session(
 
 def handle_webhook(payload: bytes, sig_header: str, db) -> dict:
     """
-    Verifies the Stripe webhook signature and processes the event synchronously.
-    Must receive the raw request body — do NOT parse as JSON first.
-    Raises ValueError on invalid payload or signature.
+    Verifies the Stripe webhook signature then parses the raw JSON payload
+    directly — avoids all StripeObject attribute access issues.
+    construct_event() is used for signature verification only.
     """
     try:
-        event = stripe.Webhook.construct_event(payload, sig_header, _WEBHOOK_SECRET)
+        stripe.Webhook.construct_event(payload, sig_header, _WEBHOOK_SECRET)
     except ValueError as exc:
         logger.error("Invalid webhook payload: %s", exc)
         raise
@@ -104,73 +105,80 @@ def handle_webhook(payload: bytes, sig_header: str, db) -> dict:
         logger.error("Invalid webhook signature: %s", exc)
         raise ValueError(f"Invalid signature: {exc}") from exc
 
-    event_type = event["type"]
+    # Parse raw bytes as plain dict — no StripeObject quirks
+    raw        = json.loads(payload)
+    event_type = raw["type"]
+    data       = raw["data"]["object"]
     logger.info("Webhook received: %s", event_type)
 
     try:
         if event_type == "checkout.session.completed":
-            session_dict = event["data"]["object"].to_dict_recursive()
-            workspace_id    = session_dict.get("metadata", {}).get("workspace_id")
-            customer_id     = session_dict.get("customer")
-            subscription_id = session_dict.get("subscription")
+            workspace_id    = data.get("metadata", {}).get("workspace_id")
+            customer_id     = data.get("customer")
+            subscription_id = data.get("subscription")
 
             logger.info(
-                "Checkout completed: workspace=%s customer=%s subscription=%s",
+                "Checkout: workspace=%s customer=%s sub=%s",
                 workspace_id, customer_id, subscription_id,
             )
 
-            if workspace_id:
-                ws = db.query(Workspace).filter(Workspace.id == workspace_id).first()
-                if ws:
-                    ws.plan                   = "pro"
-                    ws.stripe_customer_id     = customer_id
-                    ws.stripe_subscription_id = subscription_id
-                    ws.subscription_status    = "active"
-                    db.commit()
-                    logger.info("Workspace %s upgraded to Pro", workspace_id)
-                else:
-                    logger.error("Workspace %s not found in DB", workspace_id)
-            else:
-                logger.error("No workspace_id in session metadata")
+            if not workspace_id:
+                logger.error("No workspace_id in metadata")
+                return {"received": True}
+
+            workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+            if not workspace:
+                logger.error("Workspace %s not found", workspace_id)
+                return {"received": True}
+
+            workspace.plan                   = "pro"
+            workspace.stripe_customer_id     = customer_id
+            workspace.stripe_subscription_id = subscription_id
+            workspace.subscription_status    = "active"
+            db.commit()
+            logger.info("✓ Workspace %s → Pro", workspace_id)
 
         elif event_type == "customer.subscription.updated":
-            sub_dict = event["data"]["object"].to_dict_recursive()
-            sub_id   = sub_dict.get("id")
-            status   = sub_dict.get("status")
-            ws = db.query(Workspace).filter(Workspace.stripe_subscription_id == sub_id).first()
-            if ws:
-                ws.subscription_status = status
+            sub_id = data.get("id")
+            status = data.get("status")
+            workspace = db.query(Workspace).filter(
+                Workspace.stripe_subscription_id == sub_id
+            ).first()
+            if workspace:
+                workspace.subscription_status = status
                 if status == "active":
-                    ws.plan = "pro"
+                    workspace.plan = "pro"
                 db.commit()
                 logger.info("Subscription updated: %s → %s", sub_id, status)
 
         elif event_type == "customer.subscription.deleted":
-            sub_dict = event["data"]["object"].to_dict_recursive()
-            sub_id   = sub_dict.get("id")
-            ws = db.query(Workspace).filter(Workspace.stripe_subscription_id == sub_id).first()
-            if ws:
-                ws.plan                   = "free"
-                ws.subscription_status    = "canceled"
-                ws.stripe_subscription_id = None
+            sub_id = data.get("id")
+            workspace = db.query(Workspace).filter(
+                Workspace.stripe_subscription_id == sub_id
+            ).first()
+            if workspace:
+                workspace.plan                   = "free"
+                workspace.subscription_status    = "canceled"
+                workspace.stripe_subscription_id = None
                 db.commit()
                 logger.info("Subscription canceled: %s", sub_id)
 
         elif event_type == "invoice.payment_failed":
-            inv_dict    = event["data"]["object"].to_dict_recursive()
-            customer_id = inv_dict.get("customer")
-            ws = db.query(Workspace).filter(Workspace.stripe_customer_id == customer_id).first()
-            if ws:
-                ws.subscription_status = "past_due"
+            customer_id = data.get("customer")
+            workspace = db.query(Workspace).filter(
+                Workspace.stripe_customer_id == customer_id
+            ).first()
+            if workspace:
+                workspace.subscription_status = "past_due"
                 db.commit()
                 logger.info("Payment failed: customer=%s", customer_id)
 
         else:
             logger.debug("Unhandled Stripe event type: %s", event_type)
 
-    except Exception:
+    except Exception as exc:
         db.rollback()
-        logger.exception("Error processing webhook event %s", event_type)
+        logger.error("Error processing %s: %s", event_type, exc, exc_info=True)
         raise
 
     return {"received": True}
