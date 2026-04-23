@@ -2,6 +2,11 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import MessageBubble from './components/MessageBubble.jsx'
 import InputBar from './components/InputBar.jsx'
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const WS_BASE  = import.meta.env.VITE_WS_URL
+  ? import.meta.env.VITE_WS_URL.replace('https://', 'wss://').replace('http://', 'ws://')
+  : 'ws://localhost:8000'
+
 /* ── Session ─────────────────────────────────────────── */
 function getOrCreateSessionId() {
   const key = 'opsiq-session-id'
@@ -11,8 +16,7 @@ function getOrCreateSessionId() {
 }
 
 function wsUrl(sessionId) {
-  const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
-  return `${proto}://${window.location.host}/ws/${sessionId}`
+  return `${WS_BASE}/ws/${sessionId}`
 }
 
 const WS_CONNECTING = 'connecting'
