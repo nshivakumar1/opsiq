@@ -80,10 +80,10 @@ function EmptyState({ onSelect, wsStatus }) {
         AI-powered DevOps intelligence
       </div>
 
-      <h1 className="font-syne font-black text-white leading-[1.05] tracking-tight mb-4 max-w-lg"
-        style={{ fontSize: 'clamp(2rem, 4vw, 2.75rem)' }}>
+      <h1 className="font-syne font-bold text-white leading-[1.1] mb-4 max-w-lg"
+        style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.4rem)', letterSpacing: '-0.02em' }}>
         Intelligent Ops for{' '}
-        <span style={{ color: '#00d4aa' }}>Modern Teams.</span>
+        <span style={{ color: '#00d4aa' }}>Modern Teams.</span> ⚡
       </h1>
 
       <p className="text-base font-sans mb-10 max-w-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
