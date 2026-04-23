@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "interfaces/web/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
+    },
+    {
+      "src": "api/main.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    { "src": "/query",           "dest": "/api/main.py" },
+    { "src": "/health",          "dest": "/api/main.py" },
+    { "src": "/sessions/(.*)",   "dest": "/api/main.py" },
+    { "src": "/slack/(.*)",      "dest": "/api/main.py" },
+    { "src": "/assets/(.*)",     "dest": "/interfaces/web/assets/$1" },
+    { "src": "/(.*)",            "dest": "/interfaces/web/index.html" }
+  ]
+}
