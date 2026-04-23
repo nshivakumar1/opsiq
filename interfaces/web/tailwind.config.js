@@ -4,13 +4,16 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Fira Code', 'ui-monospace', 'monospace'],
+        sans:  ['DM Sans', 'system-ui', '-apple-system', 'sans-serif'],
+        syne:  ['Syne', 'sans-serif'],
+        mono:  ['JetBrains Mono', 'Fira Code', 'ui-monospace', 'monospace'],
       },
       colors: {
-        violet: {
-          950: '#1a0533',
-        },
+        teal:  { DEFAULT: '#00d4aa', dark: '#00b894' },
+        amber: { DEFAULT: '#f0883e', dark: '#d97706' },
+        violet: { DEFAULT: '#7c3aed', 950: '#1a0533' },
+        surface: 'rgba(255,255,255,0.03)',
+        border:  'rgba(255,255,255,0.07)',
       },
       animation: {
         'fade-in':    'fadeIn 0.4s ease-out',
@@ -45,8 +48,8 @@ export default {
           '50%':     { transform: 'translateY(-10px)' },
         },
         badgeGlow: {
-          '0%,100%': { boxShadow: '0 0 6px rgba(124,58,237,0.4)' },
-          '50%':     { boxShadow: '0 0 16px rgba(124,58,237,0.8)' },
+          '0%,100%': { boxShadow: '0 0 6px rgba(0,212,170,0.3)' },
+          '50%':     { boxShadow: '0 0 18px rgba(0,212,170,0.6)' },
         },
       },
     },
