@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,138 +7,115 @@
 @layer base {
   html, body, #root {
     @apply h-full antialiased;
-    background: #04040d;
-    color: #e2e8f0;
+    background: #000000;
+    color: #ffffff;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 
-  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 9999px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.5); }
-
-  * { box-sizing: border-box; }
+  ::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.35); border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(124,58,237,0.6); }
 }
 
 @layer components {
 
-  /* ── Glassmorphism surface ────────────────────────────── */
+  /* ── Glass surface ────────────────────────────────── */
   .glass {
     background: rgba(255,255,255,0.03);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255,255,255,0.06);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.07);
   }
 
-  .glass-strong {
-    background: rgba(255,255,255,0.06);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255,255,255,0.1);
+  /* ── Pill badge ───────────────────────────────────── */
+  .badge-new {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px 4px 4px;
+    border-radius: 9999px;
+    border: 1px solid rgba(124,58,237,0.4);
+    background: rgba(124,58,237,0.1);
+    font-size: 12px;
+    color: rgba(255,255,255,0.8);
+  }
+  .badge-new .pill {
+    background: #7c3aed;
+    border-radius: 9999px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
   }
 
-  /* ── Gradient text ────────────────────────────────────── */
-  .text-gradient {
-    background: linear-gradient(135deg, #06b6d4, #8b5cf6, #6366f1);
-    background-size: 300%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: textGradient 4s ease-in-out infinite;
-  }
-
-  /* ── Neon glow border ─────────────────────────────────── */
-  .glow-border {
-    position: relative;
-  }
-  .glow-border::before {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(135deg, rgba(6,182,212,0.6), rgba(139,92,246,0.6), rgba(99,102,241,0.6));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    animation: borderFlow 3s linear infinite;
-    background-size: 300%;
-    pointer-events: none;
-  }
-
-  /* ── Grid overlay ─────────────────────────────────────── */
-  .grid-overlay {
-    background-image:
-      linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
-    background-size: 48px 48px;
-  }
-
-  /* ── Markdown ─────────────────────────────────────────── */
+  /* ── Prose ────────────────────────────────────────── */
   .prose-opsiq {
     @apply leading-relaxed;
-    color: #cbd5e1;
+    color: rgba(255,255,255,0.75);
   }
   .prose-opsiq h1, .prose-opsiq h2, .prose-opsiq h3 {
-    color: #f1f5f9;
-    @apply font-semibold mt-4 mb-2;
+    color: #ffffff;
+    @apply font-bold mt-4 mb-2;
   }
   .prose-opsiq h1 { @apply text-lg; }
   .prose-opsiq h2 { @apply text-base; }
   .prose-opsiq h3 { @apply text-sm; }
-  .prose-opsiq p { @apply mb-3 last:mb-0; }
+  .prose-opsiq p  { @apply mb-3 last:mb-0; }
   .prose-opsiq ul { @apply list-disc pl-5 mb-3 space-y-1; }
   .prose-opsiq ol { @apply list-decimal pl-5 mb-3 space-y-1; }
-  .prose-opsiq li { color: #cbd5e1; }
-  .prose-opsiq a { color: #67e8f9; text-decoration: underline; }
-  .prose-opsiq a:hover { color: #a5f3fc; }
-  .prose-opsiq strong { color: #f1f5f9; @apply font-semibold; }
-  .prose-opsiq em { color: #94a3b8; @apply italic; }
+  .prose-opsiq li { color: rgba(255,255,255,0.7); }
+  .prose-opsiq a  { color: #a78bfa; text-decoration: underline; }
+  .prose-opsiq a:hover { color: #c4b5fd; }
+  .prose-opsiq strong { color: #ffffff; @apply font-semibold; }
+  .prose-opsiq em     { color: rgba(255,255,255,0.6); @apply italic; }
   .prose-opsiq blockquote {
-    border-left: 2px solid rgba(99,102,241,0.5);
-    @apply pl-4 italic my-3;
-    color: #94a3b8;
+    border-left: 2px solid rgba(124,58,237,0.6);
+    padding-left: 16px;
+    color: rgba(255,255,255,0.5);
+    @apply italic my-3;
   }
-  .prose-opsiq hr { border-color: rgba(255,255,255,0.08); @apply my-4; }
+  .prose-opsiq hr { border-color: rgba(255,255,255,0.06); @apply my-4; }
   .prose-opsiq table { @apply w-full border-collapse text-sm my-3; }
   .prose-opsiq th {
-    background: rgba(99,102,241,0.1);
-    color: #a5b4fc;
+    background: rgba(124,58,237,0.12);
+    color: #c4b5fd;
     @apply font-medium px-3 py-2 text-left;
-    border: 1px solid rgba(99,102,241,0.2);
+    border: 1px solid rgba(124,58,237,0.2);
   }
   .prose-opsiq td {
     @apply px-3 py-2;
     border: 1px solid rgba(255,255,255,0.06);
-    color: #cbd5e1;
+    color: rgba(255,255,255,0.7);
   }
   .prose-opsiq tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
   .prose-opsiq code {
     @apply font-mono text-xs px-1.5 py-0.5 rounded;
-    background: rgba(6,182,212,0.1);
-    color: #67e8f9;
-    border: 1px solid rgba(6,182,212,0.2);
+    background: rgba(124,58,237,0.12);
+    color: #c4b5fd;
+    border: 1px solid rgba(124,58,237,0.2);
   }
   .prose-opsiq pre {
-    background: rgba(0,0,0,0.4);
-    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.07);
     @apply rounded-xl p-4 overflow-x-auto my-3;
   }
   .prose-opsiq pre code {
     background: transparent;
     border: none;
-    color: #94a3b8;
+    color: rgba(255,255,255,0.65);
     @apply p-0 text-xs leading-relaxed;
   }
 
-  /* ── Shimmer loading bar ──────────────────────────────── */
+  /* ── Shimmer ──────────────────────────────────────── */
   .shimmer-bar {
     background: linear-gradient(
       90deg,
-      rgba(255,255,255,0) 0%,
-      rgba(99,102,241,0.15) 50%,
-      rgba(255,255,255,0) 100%
+      transparent 0%,
+      rgba(124,58,237,0.3) 50%,
+      transparent 100%
     );
-    background-size: 200% 100%;
-    animation: shimmer 1.5s linear infinite;
+    background-size: 400% 100%;
+    animation: shimmer 1.8s linear infinite;
   }
 }
