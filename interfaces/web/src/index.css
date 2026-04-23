@@ -4,23 +4,81 @@
 
 @layer base {
   html, body, #root {
-    @apply h-full bg-gray-950 text-gray-100 antialiased;
+    @apply h-full antialiased;
+    background: #04040d;
+    color: #e2e8f0;
   }
 
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { @apply bg-transparent; }
-  ::-webkit-scrollbar-thumb { @apply bg-gray-700 rounded-full; }
-  ::-webkit-scrollbar-thumb:hover { @apply bg-gray-600; }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.5); }
+
+  * { box-sizing: border-box; }
 }
 
 @layer components {
-  /* Markdown content inside assistant bubbles */
+
+  /* ── Glassmorphism surface ────────────────────────────── */
+  .glass {
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .glass-strong {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* ── Gradient text ────────────────────────────────────── */
+  .text-gradient {
+    background: linear-gradient(135deg, #06b6d4, #8b5cf6, #6366f1);
+    background-size: 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: textGradient 4s ease-in-out infinite;
+  }
+
+  /* ── Neon glow border ─────────────────────────────────── */
+  .glow-border {
+    position: relative;
+  }
+  .glow-border::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(6,182,212,0.6), rgba(139,92,246,0.6), rgba(99,102,241,0.6));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: borderFlow 3s linear infinite;
+    background-size: 300%;
+    pointer-events: none;
+  }
+
+  /* ── Grid overlay ─────────────────────────────────────── */
+  .grid-overlay {
+    background-image:
+      linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  /* ── Markdown ─────────────────────────────────────────── */
   .prose-opsiq {
-    @apply text-gray-200 leading-relaxed;
+    @apply leading-relaxed;
+    color: #cbd5e1;
   }
   .prose-opsiq h1, .prose-opsiq h2, .prose-opsiq h3 {
-    @apply text-gray-100 font-semibold mt-4 mb-2;
+    color: #f1f5f9;
+    @apply font-semibold mt-4 mb-2;
   }
   .prose-opsiq h1 { @apply text-lg; }
   .prose-opsiq h2 { @apply text-base; }
@@ -28,27 +86,57 @@
   .prose-opsiq p { @apply mb-3 last:mb-0; }
   .prose-opsiq ul { @apply list-disc pl-5 mb-3 space-y-1; }
   .prose-opsiq ol { @apply list-decimal pl-5 mb-3 space-y-1; }
-  .prose-opsiq li { @apply text-gray-200; }
-  .prose-opsiq a { @apply text-indigo-400 hover:text-indigo-300 underline; }
-  .prose-opsiq strong { @apply text-gray-100 font-semibold; }
-  .prose-opsiq em { @apply text-gray-300 italic; }
+  .prose-opsiq li { color: #cbd5e1; }
+  .prose-opsiq a { color: #67e8f9; text-decoration: underline; }
+  .prose-opsiq a:hover { color: #a5f3fc; }
+  .prose-opsiq strong { color: #f1f5f9; @apply font-semibold; }
+  .prose-opsiq em { color: #94a3b8; @apply italic; }
   .prose-opsiq blockquote {
-    @apply border-l-2 border-gray-600 pl-4 text-gray-400 italic my-3;
+    border-left: 2px solid rgba(99,102,241,0.5);
+    @apply pl-4 italic my-3;
+    color: #94a3b8;
   }
-  .prose-opsiq hr { @apply border-gray-700 my-4; }
+  .prose-opsiq hr { border-color: rgba(255,255,255,0.08); @apply my-4; }
   .prose-opsiq table { @apply w-full border-collapse text-sm my-3; }
   .prose-opsiq th {
-    @apply bg-gray-800 text-gray-300 font-medium px-3 py-2 text-left border border-gray-700;
+    background: rgba(99,102,241,0.1);
+    color: #a5b4fc;
+    @apply font-medium px-3 py-2 text-left;
+    border: 1px solid rgba(99,102,241,0.2);
   }
-  .prose-opsiq td { @apply px-3 py-2 border border-gray-700 text-gray-300; }
-  .prose-opsiq tr:nth-child(even) td { @apply bg-gray-800/40; }
+  .prose-opsiq td {
+    @apply px-3 py-2;
+    border: 1px solid rgba(255,255,255,0.06);
+    color: #cbd5e1;
+  }
+  .prose-opsiq tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
   .prose-opsiq code {
-    @apply font-mono text-xs bg-gray-800 text-emerald-400 px-1.5 py-0.5 rounded;
+    @apply font-mono text-xs px-1.5 py-0.5 rounded;
+    background: rgba(6,182,212,0.1);
+    color: #67e8f9;
+    border: 1px solid rgba(6,182,212,0.2);
   }
   .prose-opsiq pre {
-    @apply bg-gray-900 border border-gray-700/60 rounded-lg p-4 overflow-x-auto my-3;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.06);
+    @apply rounded-xl p-4 overflow-x-auto my-3;
   }
   .prose-opsiq pre code {
-    @apply bg-transparent text-gray-300 p-0 text-xs leading-relaxed;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    @apply p-0 text-xs leading-relaxed;
+  }
+
+  /* ── Shimmer loading bar ──────────────────────────────── */
+  .shimmer-bar {
+    background: linear-gradient(
+      90deg,
+      rgba(255,255,255,0) 0%,
+      rgba(99,102,241,0.15) 50%,
+      rgba(255,255,255,0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
   }
 }
