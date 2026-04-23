@@ -18,6 +18,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Request, Query
+from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -27,7 +28,7 @@ from agent.core import OpsIQAgent
 from memory.store import MemoryStore
 from interfaces.slack_bot.app import slack_app_router
 from cloud.auth import get_current_user_optional, validate_bearer_token
-from cloud.models import QueryLog, SessionLocal, init_db
+from cloud.models import QueryLog, SessionLocal, Workspace, init_db, get_db
 from cloud.workspace import get_or_create_workspace
 from cloud.limits import check_and_increment_query_count, QueryLimitExceeded
 from cloud.router import cloud_router
@@ -166,6 +167,45 @@ async def query(
     except Exception as exc:
         logger.exception("Query failed")
         raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ── Admin ─────────────────────────────────────────────────────────────────────
+
+@app.post("/admin/upgrade-workspace")
+async def admin_upgrade(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Manually upgrade a workspace to Pro. Protected by ADMIN_SECRET_KEY."""
+    admin_key = request.headers.get("X-Admin-Key", "")
+    expected  = os.getenv("ADMIN_SECRET_KEY", "")
+
+    if not expected or admin_key != expected:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    body         = await request.json()
+    workspace_id = body.get("workspace_id")
+
+    workspace = db.query(Workspace).filter(
+        Workspace.id == workspace_id
+    ).first()
+
+    if not workspace:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Workspace {workspace_id} not found",
+        )
+
+    workspace.plan                = "pro"
+    workspace.subscription_status = "active"
+    workspace.stripe_customer_id  = body.get("customer_id", "manual_upgrade")
+    db.commit()
+
+    return {
+        "upgraded":     True,
+        "workspace_id": workspace_id,
+        "plan":         workspace.plan,
+    }
 
 
 @app.get("/sessions/{session_id}")
