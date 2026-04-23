@@ -71,62 +71,75 @@ class OpsIQAgent:
         tools_used = []
         tool_rounds = 0
 
-        while tool_rounds < MAX_TOOL_ROUNDS:
-            response = self.client.messages.create(
-                model=self.model,
-                max_tokens=4096,
-                system=SYSTEM_PROMPT,
-                tools=TOOLS,
-                messages=messages,
-            )
-
-            if response.stop_reason == "tool_use":
-                tool_uses = [b for b in response.content if b.type == "tool_use"]
-                tool_results_content = []
-
-                for tool_use in tool_uses:
-                    yield {
-                        "type": "tool_call",
-                        "tool": tool_use.name,
-                        "input": tool_use.input,
-                    }
-
-                    result = self.dispatcher.dispatch(tool_use.name, tool_use.input)
-                    tools_used.append(tool_use.name)
-
-                    yield {
-                        "type": "tool_result",
-                        "tool": tool_use.name,
-                        "result_preview": self._preview(result),
-                    }
-
-                    tool_results_content.append({
-                        "type": "tool_result",
-                        "tool_use_id": tool_use.id,
-                        "content": json.dumps(result),
-                    })
-
-                messages.append({"role": "assistant", "content": response.content})
-                messages.append({"role": "user", "content": tool_results_content})
-                tool_rounds += 1
-
-            elif response.stop_reason == "end_turn":
-                final_text = "".join(
-                    b.text for b in response.content if hasattr(b, "text")
+        try:
+            while tool_rounds < MAX_TOOL_ROUNDS:
+                response = self.client.messages.create(
+                    model=self.model,
+                    max_tokens=4096,
+                    system=SYSTEM_PROMPT,
+                    tools=TOOLS,
+                    messages=messages,
                 )
-                messages.append({"role": "assistant", "content": final_text})
-                self.memory.save_history(session_id, messages)
 
-                yield {"type": "text_chunk", "text": final_text}
-                yield {"type": "done", "tools_used": tools_used}
-                return
+                if response.stop_reason == "tool_use":
+                    tool_uses = [b for b in response.content if b.type == "tool_use"]
+                    tool_results_content = []
 
-        # Shouldn't normally reach here — safety fallback
-        yield {
-            "type": "done",
-            "tools_used": tools_used,
-            "warning": f"Reached max tool rounds ({MAX_TOOL_ROUNDS})",
-        }
+                    for tool_use in tool_uses:
+                        yield {
+                            "type": "tool_call",
+                            "tool": tool_use.name,
+                            "input": tool_use.input,
+                        }
+
+                        result = self.dispatcher.dispatch(tool_use.name, tool_use.input)
+                        tools_used.append(tool_use.name)
+
+                        yield {
+                            "type": "tool_result",
+                            "tool": tool_use.name,
+                            "result_preview": self._preview(result),
+                        }
+
+                        tool_results_content.append({
+                            "type": "tool_result",
+                            "tool_use_id": tool_use.id,
+                            "content": json.dumps(result),
+                        })
+
+                    messages.append({"role": "assistant", "content": response.content})
+                    messages.append({"role": "user", "content": tool_results_content})
+                    tool_rounds += 1
+
+                elif response.stop_reason == "end_turn":
+                    final_text = "".join(
+                        b.text for b in response.content if hasattr(b, "text")
+                    )
+                    messages.append({"role": "assistant", "content": final_text})
+                    self.memory.save_history(session_id, messages)
+
+                    yield {"type": "text_chunk", "text": final_text}
+                    yield {"type": "done", "tools_used": tools_used}
+                    return
+
+            # Shouldn't normally reach here — safety fallback
+            yield {
+                "type": "done",
+                "tools_used": tools_used,
+                "warning": f"Reached max tool rounds ({MAX_TOOL_ROUNDS})",
+            }
+
+        except anthropic.BadRequestError as e:
+            msg = str(e)
+            if "credit balance" in msg.lower():
+                yield {
+                    "type": "error",
+                    "message": "Anthropic API credits exhausted. Add credits at console.anthropic.com or upgrade to OpsIQ Cloud.",
+                    "code": "insufficient_credits",
+                }
+            else:
+                yield {"type": "error", "message": msg}
+            return
 
     # ── Internal helpers ──────────────────────────────────────────────────────
 
