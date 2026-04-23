@@ -90,6 +90,12 @@ if _WEB_DIST.is_dir():
 
     @app.get("/{full_path:path}", include_in_schema=False)
     async def spa_fallback(full_path: str):
+        api_prefixes = (
+            "query", "sessions", "health", "slack",
+            "ws", "assets", "cloud", "admin", "debug",
+        )
+        if any(full_path.startswith(p) for p in api_prefixes):
+            raise HTTPException(status_code=404)
         return FileResponse(_WEB_DIST / "index.html")
 
 else:
