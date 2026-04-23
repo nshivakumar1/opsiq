@@ -8,6 +8,10 @@ const domain   = import.meta.env.VITE_AUTH0_DOMAIN
 const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID
 const audience = import.meta.env.VITE_AUTH0_AUDIENCE
 
+const onRedirectCallback = (appState) => {
+  window.location.href = appState?.returnTo || '/app'
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Auth0Provider
@@ -18,6 +22,7 @@ createRoot(document.getElementById('root')).render(
         audience: audience,
       }}
       cacheLocation="localstorage"
+      onRedirectCallback={onRedirectCallback}
     >
       <App />
     </Auth0Provider>
