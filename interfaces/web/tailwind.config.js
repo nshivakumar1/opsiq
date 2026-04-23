@@ -5,7 +5,7 @@ export default {
     extend: {
       fontFamily: {
         sans:  ['DM Sans', 'system-ui', '-apple-system', 'sans-serif'],
-        syne:  ['Syne', 'sans-serif'],
+        syne:  ['Space Grotesk', 'sans-serif'],
         mono:  ['JetBrains Mono', 'Fira Code', 'ui-monospace', 'monospace'],
       },
       colors: {

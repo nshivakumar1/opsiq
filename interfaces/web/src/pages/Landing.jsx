@@ -108,6 +108,42 @@ function TerminalCard() {
   )
 }
 
+/* ── Tech quotes marquee ─────────────────────────────────────────────── */
+const QUOTES = [
+  { q: '"The first rule of any technology is that automation applied to an efficient operation magnifies efficiency."', a: '— Bill Gates' },
+  { q: '"Move fast and fix things. 🛠️"', a: '— OpsIQ team' },
+  { q: '"It\'s not a bug — it\'s an undocumented feature. 🐛"', a: '— Ancient dev proverb' },
+  { q: '"Any sufficiently advanced monitoring is indistinguishable from magic. ✨"', a: '— SRE wisdom' },
+  { q: '"On-call at 3am builds character. OpsIQ lets you sleep. 😴"', a: '— OpsIQ team' },
+  { q: '"You can\'t manage what you can\'t measure. 📊"', a: '— Peter Drucker' },
+  { q: '"The cloud is just someone else\'s computer. ☁️ Make sure it\'s working."', a: '— DevOps proverb' },
+]
+
+function QuotesBar() {
+  const items = [...QUOTES, ...QUOTES]
+  return (
+    <div className="relative overflow-hidden py-6"
+      style={{ borderBottom: `1px solid ${T.border}`, background: 'rgba(0,212,170,0.02)' }}>
+      <div className="flex gap-16 whitespace-nowrap items-center"
+        style={{ animation: 'marquee 55s linear infinite', width: 'max-content' }}>
+        {items.map(({ q, a }, i) => (
+          <span key={i} className="inline-flex items-center gap-2 text-[12px] font-sans shrink-0"
+            style={{ color: 'rgba(255,255,255,0.35)', maxWidth: '420px' }}>
+            <span style={{ color: T.teal, opacity: 0.6, fontSize: '16px' }}>"</span>
+            <span className="truncate" style={{ maxWidth: '360px' }}>{q}</span>
+            <span style={{ color: T.amber, opacity: 0.7, whiteSpace: 'nowrap' }}>{a}</span>
+            <span className="mx-6" style={{ color: 'rgba(255,255,255,0.1)' }}>✦</span>
+          </span>
+        ))}
+      </div>
+      <div className="absolute inset-y-0 left-0 w-20 pointer-events-none"
+        style={{ background: `linear-gradient(to right, ${T.bg}, transparent)` }} />
+      <div className="absolute inset-y-0 right-0 w-20 pointer-events-none"
+        style={{ background: `linear-gradient(to left, ${T.bg}, transparent)` }} />
+    </div>
+  )
+}
+
 /* ── Logos marquee ───────────────────────────────────────────────────── */
 const LOGOS = ['GitHub','Datadog','Jira','Grafana','Slack','Confluence','Prometheus','New Relic','PagerDuty','OpsGenie']
 
@@ -132,12 +168,12 @@ function LogosBar() {
 
 /* ── Features section ────────────────────────────────────────────────── */
 const ALL_FEATURES = [
-  { icon: '⚡', accent: '#00d4aa', cat: 'Incident',   title: 'Instant Triage',      body: 'Correlate alerts, deploys, and code changes in a single query. Cut MTTR from hours to seconds.' },
-  { icon: '📋', accent: '#f0883e', cat: 'Knowledge',  title: 'Sprint Intelligence', body: '"What\'s blocked and why?" — OpsIQ scans Jira, finds the bottleneck, answers in plain English.' },
-  { icon: '📖', accent: '#a78bfa', cat: 'Knowledge',  title: 'Runbook Lookup',      body: 'Surface the right Confluence doc for any alert automatically. No more copy-pasting into search.' },
-  { icon: '🤖', accent: '#00d4aa', cat: 'Automation', title: 'Autonomous Actions',  body: 'Create Jira tickets, send Slack alerts, acknowledge pages — with your confirmation first.' },
-  { icon: '💬', accent: '#f0883e', cat: 'Incident',   title: 'Multi-turn Memory',   body: 'Follow-up questions remember full conversation context. No need to repeat yourself.' },
-  { icon: '🔌', accent: '#a78bfa', cat: 'Automation', title: 'Open & Extensible',   body: 'Add a new integration in under 30 lines. OpsIQ is designed to grow with your stack.' },
+  { icon: '🚨', accent: '#00d4aa', cat: 'Incident',   title: 'Instant Triage',      body: 'Correlate alerts, deploys, and code changes in one query. Cut MTTR from hours ⏱ to seconds.' },
+  { icon: '🗂️', accent: '#f0883e', cat: 'Knowledge',  title: 'Sprint Intelligence', body: '"What\'s blocked and why?" 🤔 OpsIQ scans Jira, finds the bottleneck, answers in plain English.' },
+  { icon: '📖', accent: '#a78bfa', cat: 'Knowledge',  title: 'Runbook Lookup',      body: 'Surface the right Confluence doc for any alert 🔍 automatically. No more copy-pasting into search.' },
+  { icon: '🤖', accent: '#00d4aa', cat: 'Automation', title: 'Autonomous Actions',  body: 'Create Jira tickets, send Slack pings 📣, acknowledge pages — always with your 👍 confirmation first.' },
+  { icon: '🧠', accent: '#f0883e', cat: 'Incident',   title: 'Multi-turn Memory',   body: 'Ask follow-ups naturally 💬 — OpsIQ remembers your full session context. No repeating yourself.' },
+  { icon: '🔌', accent: '#a78bfa', cat: 'Automation', title: 'Open & Extensible',   body: 'New integration in under 30 lines 🛠️. Fork it, extend it, make it yours. PRs welcome!' },
 ]
 const FEATURE_TABS = ['All', 'Incident', 'Automation', 'Knowledge']
 
@@ -184,9 +220,9 @@ function FeaturesSection() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-4 font-sans" style={{ color: T.teal }}>
               Capabilities
             </p>
-            <h2 className="font-syne font-black text-white leading-tight mb-4"
-              style={{ fontSize: 'clamp(1.9rem, 3.5vw, 2.75rem)' }}>
-              Everything your on-call engineer does,<br className="hidden md:block" /> in seconds.
+            <h2 className="font-syne font-bold text-white leading-tight mb-4"
+              style={{ fontSize: 'clamp(1.6rem, 3vw, 2.25rem)', letterSpacing: '-0.02em' }}>
+              Everything your on-call engineer does,<br className="hidden md:block" /> in seconds. ⚡
             </h2>
             <p className="text-[15px] font-sans" style={{ color: T.muted }}>
               OpsIQ orchestrates your existing tools — no new dashboards, no new logins.
@@ -223,9 +259,9 @@ function FeaturesSection() {
 
 /* ── How it works ────────────────────────────────────────────────────── */
 const STEPS = [
-  { n: '01', accent: T.teal,   title: 'Connect your stack',      body: 'Add your API keys to .env. OpsIQ gracefully skips any tool whose credentials are missing — start with one, add more later.' },
-  { n: '02', accent: T.amber,  title: 'Ask in plain English',     body: 'No query language. No dashboard hunting. Type your question in Slack, the web UI, or the CLI.' },
-  { n: '03', accent: '#a78bfa',title: 'Get a synthesised answer', body: 'Claude orchestrates your tools, pulls the relevant data, and returns one clear answer with sources cited.' },
+  { n: '01', emoji: '🔑', accent: T.teal,   title: 'Connect your stack',      body: 'Drop your API keys in .env — GitHub, Datadog, Jira, whatever you have. OpsIQ skips anything missing. Start with one tool 🛠️, add the rest later.' },
+  { n: '02', emoji: '💬', accent: T.amber,  title: 'Ask in plain English',     body: 'No dashboards, no query language, no hunting. Type your question in Slack, the web UI, or just the CLI. Even "what\'s on fire right now? 🔥" works.' },
+  { n: '03', emoji: '✨', accent: '#a78bfa',title: 'Get a synthesised answer', body: 'Claude orchestrates your tools, pulls the relevant data 📊, and hands you one clear answer — with every source cited so you can drill in.' },
 ]
 
 /* ── Pricing ─────────────────────────────────────────────────────────── */
@@ -310,8 +346,9 @@ function PricingSection() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-4 font-sans" style={{ color: '#a78bfa' }}>
               Pricing
             </p>
-            <h2 className="font-syne font-black text-white mb-4" style={{ fontSize: 'clamp(1.9rem, 3.5vw, 2.75rem)' }}>
-              Free to self-host.<br />Managed if you need it.
+            <h2 className="font-syne font-bold text-white mb-4"
+              style={{ fontSize: 'clamp(1.6rem, 3vw, 2.25rem)', letterSpacing: '-0.02em' }}>
+              Free to self-host. 🆓<br />Managed if you need it.
             </h2>
             <p className="text-[15px] font-sans mb-8" style={{ color: T.muted }}>
               No surprise bills. Bring your own Anthropic key when self-hosting.
@@ -423,21 +460,21 @@ export default function Landing() {
                 style={{ background: 'rgba(0,212,170,0.1)', border: '1px solid rgba(0,212,170,0.28)', color: T.teal }}>
                 <span className="w-1.5 h-1.5 rounded-full"
                   style={{ background: T.teal, boxShadow: `0 0 6px ${T.teal}` }} />
-                Built on Claude · Open source
+                🤖 Built on Claude · Open source
               </div>
             </FadeIn>
             <FadeIn delay={0.08}>
-              <h1 className="font-syne font-black leading-[1.05] tracking-tight mb-6"
-                style={{ fontSize: 'clamp(2.5rem, 5vw, 3.75rem)' }}>
+              <h1 className="font-syne font-bold leading-[1.1] mb-6"
+                style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', letterSpacing: '-0.02em' }}>
                 Ask your{' '}
                 <span style={{ color: T.teal }}>infrastructure</span>
-                {' '}anything.
+                {' '}anything. 🔍
               </h1>
             </FadeIn>
             <FadeIn delay={0.16}>
               <p className="text-[16px] leading-relaxed font-sans mb-10"
                 style={{ color: T.muted, maxWidth: '420px' }}>
-                OpsIQ connects to GitHub, Jira, Datadog, Confluence and Slack — then answers questions about your stack in seconds, without leaving your terminal or chat.
+                OpsIQ connects to GitHub, Jira, Datadog, Confluence and Slack ⚡ — then answers questions about your stack in seconds, without leaving your terminal or chat.
               </p>
             </FadeIn>
             <FadeIn delay={0.22}>
@@ -468,6 +505,7 @@ export default function Landing() {
       </section>
 
       <LogosBar />
+      <QuotesBar />
       <FeaturesSection />
 
       {/* ── How it works ─────────────────────────────────────────────── */}
@@ -478,9 +516,9 @@ export default function Landing() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-4 font-sans" style={{ color: T.amber }}>
                 How it works
               </p>
-              <h2 className="font-syne font-black text-white"
-                style={{ fontSize: 'clamp(1.9rem, 3.5vw, 2.75rem)' }}>
-                Up and running in 3 steps.
+              <h2 className="font-syne font-bold text-white"
+                style={{ fontSize: 'clamp(1.6rem, 3vw, 2.25rem)', letterSpacing: '-0.02em' }}>
+                Up and running in 3 steps. 🚀
               </h2>
             </div>
           </FadeIn>
@@ -489,8 +527,11 @@ export default function Landing() {
               <FadeIn key={step.n} delay={i * 0.1}>
                 <div className="rounded-2xl p-7 flex gap-7 items-start"
                   style={{ background: T.surface, border: `1px solid ${T.border}` }}>
-                  <div className="shrink-0 font-syne font-black text-2xl leading-none mt-1"
-                    style={{ color: step.accent, opacity: 0.55 }}>{step.n}</div>
+                  <div className="shrink-0 flex flex-col items-center gap-1 mt-0.5">
+                    <span className="text-xl leading-none">{step.emoji}</span>
+                    <span className="font-syne font-bold text-[11px]"
+                      style={{ color: step.accent, opacity: 0.6, letterSpacing: '0.05em' }}>{step.n}</span>
+                  </div>
                   <div>
                     <h3 className="text-white font-semibold text-[16px] mb-2 font-sans">{step.title}</h3>
                     <p className="text-[14px] leading-relaxed font-sans" style={{ color: T.muted }}>{step.body}</p>
@@ -529,9 +570,9 @@ export default function Landing() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-5 font-sans" style={{ color: T.teal }}>
               Open source
             </p>
-            <h2 className="font-syne font-black text-white leading-tight mb-6"
-              style={{ fontSize: 'clamp(1.8rem, 3vw, 2.5rem)' }}>
-              Built in the open.<br />Owned by you.
+            <h2 className="font-syne font-bold text-white leading-tight mb-6"
+              style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', letterSpacing: '-0.02em' }}>
+              Built in the open. 🔓<br />Owned by you.
             </h2>
             <p className="text-[15px] leading-relaxed font-sans mb-8" style={{ color: T.muted }}>
               OpsIQ is open-source under BSL 1.1 — free for personal and community use. Read the code, fork it, extend it. Adding a new integration takes under 30 lines.
@@ -570,9 +611,9 @@ export default function Landing() {
             style={{ background: 'linear-gradient(135deg, rgba(0,212,170,0.08), rgba(124,58,237,0.07))', border: '1px solid rgba(0,212,170,0.22)' }}>
             <div className="pointer-events-none absolute inset-0"
               style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(0,212,170,0.1), transparent 60%)' }} />
-            <h2 className="relative font-syne font-black text-white mb-5"
-              style={{ fontSize: 'clamp(1.8rem, 3vw, 2.5rem)' }}>
-              Stop hunting dashboards.
+            <h2 className="relative font-syne font-bold text-white mb-5"
+              style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', letterSpacing: '-0.02em' }}>
+              Stop hunting dashboards. 🎯
             </h2>
             <p className="relative text-[15px] font-sans mb-8" style={{ color: T.muted }}>
               Ask your infrastructure anything — in plain English.
