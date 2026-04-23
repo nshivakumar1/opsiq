@@ -2,27 +2,24 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import ToolStream from './ToolStream.jsx'
 
-/**
- * MessageBubble — renders a single chat message.
- *
- * User messages: right-aligned, solid indigo.
- * Assistant messages: left-aligned, dark surface, markdown-rendered content.
- *
- * For the in-progress assistant turn (streaming=true), shows ToolStream
- * while waiting for the final text.
- */
 export default function MessageBubble({ message }) {
-  if (message.role === 'user') {
-    return <UserBubble message={message} />
-  }
-  return <AssistantBubble message={message} />
+  return message.role === 'user'
+    ? <UserBubble message={message} />
+    : <AssistantBubble message={message} />
 }
 
+/* ── User bubble ─────────────────────────────────────── */
 function UserBubble({ message }) {
   return (
     <div className="flex justify-end animate-slide-up">
-      <div className="max-w-[75%] rounded-2xl rounded-tr-sm bg-indigo-600 px-4 py-3">
-        <p className="text-sm text-white whitespace-pre-wrap break-words leading-relaxed">
+      <div
+        className="max-w-[72%] rounded-2xl rounded-tr-sm px-4 py-3"
+        style={{
+          background: '#7c3aed',
+          boxShadow: '0 4px 20px rgba(124,58,237,0.3)',
+        }}
+      >
+        <p className="text-sm text-white leading-relaxed whitespace-pre-wrap break-words">
           {message.content}
         </p>
       </div>
@@ -30,35 +27,64 @@ function UserBubble({ message }) {
   )
 }
 
+/* ── Assistant bubble ────────────────────────────────── */
 function AssistantBubble({ message }) {
-  const isStreaming = message.streaming
-  const hasContent = !!message.content
+  const isStreaming  = message.streaming
+  const hasContent   = !!message.content
   const hasToolEvents = message.toolEvents?.length > 0
 
   return (
     <div className="flex justify-start animate-slide-up">
       {/* Avatar */}
-      <div className="shrink-0 w-7 h-7 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-xs mr-3 mt-0.5">
+      <div
+        className="shrink-0 mr-3 mt-0.5 w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold"
+        style={{
+          background: 'rgba(124,58,237,0.15)',
+          border: '1px solid rgba(124,58,237,0.3)',
+          boxShadow: '0 0 10px rgba(124,58,237,0.15)',
+        }}
+      >
         ⚡
       </div>
 
-      <div className="max-w-[80%] min-w-0">
-        {/* Tool stream — shown while agent is working */}
+      <div className="max-w-[78%] min-w-0 space-y-2">
+        {/* Tool events */}
         {(hasToolEvents || (isStreaming && !hasContent)) && (
-          <div className="mb-3">
+          <div>
             {isStreaming && !hasToolEvents && <ThinkingDots />}
-            <ToolStream events={message.toolEvents ?? []} />
+            <ToolStream events={message.toolEvents ?? []} streaming={isStreaming} />
           </div>
         )}
 
-        {/* Final answer */}
+        {/* Answer */}
         {hasContent && (
-          <div className="rounded-2xl rounded-tl-sm bg-gray-800/70 border border-gray-700/50 px-4 py-3">
-            <div className="prose-opsiq text-sm">
+          <div
+            className="rounded-2xl rounded-tl-sm px-4 py-3 relative overflow-hidden"
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            {/* Violet left accent */}
+            <div
+              className="absolute left-0 top-3 bottom-3 w-px rounded-full"
+              style={{ background: 'linear-gradient(to bottom, transparent, #7c3aed, transparent)' }}
+            />
+
+            <div className="prose-opsiq text-sm pl-3">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {message.content}
               </ReactMarkdown>
             </div>
+
+            {/* Streaming cursor */}
+            {isStreaming && hasContent && (
+              <span
+                className="inline-block w-0.5 h-3.5 ml-0.5 align-middle animate-pulse"
+                style={{ background: '#7c3aed' }}
+              />
+            )}
+
             {message.toolsUsed?.length > 0 && (
               <SourcesFooter tools={message.toolsUsed} />
             )}
@@ -69,27 +95,43 @@ function AssistantBubble({ message }) {
   )
 }
 
+/* ── Thinking dots ───────────────────────────────────── */
 function ThinkingDots() {
   return (
-    <div className="flex items-center gap-1 pl-1">
-      {[0, 1, 2].map((i) => (
+    <div className="flex items-center gap-1.5 px-1 py-2">
+      {[0, 1, 2].map(i => (
         <span
           key={i}
-          className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse-dot"
-          style={{ animationDelay: `${i * 0.16}s` }}
+          className="w-1.5 h-1.5 rounded-full animate-pulse-dot"
+          style={{
+            background: '#7c3aed',
+            animationDelay: `${i * 0.2}s`,
+            opacity: 0.7,
+          }}
         />
       ))}
+      <span className="text-[11px] ml-1 font-mono" style={{ color: 'rgba(255,255,255,0.25)' }}>thinking…</span>
     </div>
   )
 }
 
+/* ── Sources footer ──────────────────────────────────── */
 function SourcesFooter({ tools }) {
   return (
-    <div className="mt-3 pt-3 border-t border-gray-700/50 flex flex-wrap gap-1.5">
-      {tools.map((tool) => (
+    <div
+      className="mt-3 pt-2.5 flex flex-wrap gap-1.5 pl-3"
+      style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
+    >
+      <span className="text-[10px] self-center mr-0.5" style={{ color: 'rgba(255,255,255,0.2)' }}>via</span>
+      {tools.map(tool => (
         <span
           key={tool}
-          className="font-mono text-[10px] text-gray-500 bg-gray-900/60 border border-gray-700/40 rounded px-1.5 py-0.5"
+          className="font-mono text-[10px] px-2 py-0.5 rounded-full"
+          style={{
+            background: 'rgba(124,58,237,0.12)',
+            border: '1px solid rgba(124,58,237,0.25)',
+            color: '#a78bfa',
+          }}
         >
           {tool}
         </span>
